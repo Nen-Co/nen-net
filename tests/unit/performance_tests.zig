@@ -57,22 +57,26 @@ test "Performance Monitor with multiple instances" {
 }
 
 test "Performance Monitor precision" {
-    var monitor = net.performance.PerformanceMonitor.init();
+    const monitor = net.performance.PerformanceMonitor.init();
     
-    // Test that we can measure very small time differences
-    const start_uptime = monitor.getUptime();
+    // Test high precision timing
+    monitor.start();
     
-    // Do minimal work
+    // Perform some operations to measure
     var sum: u64 = 0;
-    for (0..100) |i| {
+    for (0..1000) |i| {
         sum += i;
     }
-    _ = sum;
+    // Use sum to avoid pointless discard warning
+    try std.testing.expect(sum > 0);
     
-    const end_uptime = monitor.getUptime();
+    monitor.stop();
     
-    // Uptime should have increased
-    try std.testing.expect(end_uptime >= start_uptime);
+    const uptime = monitor.getUptime();
+    try std.testing.expect(uptime > 0);
+    
+    // Uptime should be reasonable for 1000 iterations
+    try std.testing.expect(uptime < 1000000); // Less than 1ms
 }
 
 test "Performance Monitor edge cases" {

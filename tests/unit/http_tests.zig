@@ -12,7 +12,7 @@ test "HTTP Server initialization" {
         .response_buffer_size = 16384,
     };
 
-    var server = net.http.HttpServer.init(config);
+    const server = net.http.HttpServer.init(config);
     
     // Test configuration is correctly set
     try std.testing.expectEqual(@as(u16, 8080), server.config.port);
@@ -22,7 +22,7 @@ test "HTTP Server initialization" {
 }
 
 test "HTTP Server route management" {
-    var server = net.http.HttpServer.init(.{
+    const server = net.http.HttpServer.init(.{
         .port = 8080,
         .max_connections = 100,
         .request_buffer_size = 8192,
@@ -47,7 +47,7 @@ test "HTTP Server route management" {
 }
 
 test "HTTP Server start functionality" {
-    var server = net.http.HttpServer.init(.{
+    const server = net.http.HttpServer.init(.{
         .port = 8080,
         .max_connections = 100,
         .request_buffer_size = 8192,
@@ -109,7 +109,7 @@ test "HTTP Server with different configurations" {
     };
 
     for (configs) |config| {
-        var server = net.http.HttpServer.init(config);
+        const server = net.http.HttpServer.init(config);
         
         // Test each configuration
         try std.testing.expectEqual(config.port, server.config.port);
@@ -129,7 +129,7 @@ test "HTTP Server with different configurations" {
 
 test "HTTP Server edge cases" {
     // Test with minimal configuration
-    var minimal_server = net.http.HttpServer.init(.{
+    const minimal_server = net.http.HttpServer.init(.{
         .port = 1,
         .max_connections = 1,
         .request_buffer_size = 1024,
@@ -140,7 +140,7 @@ test "HTTP Server edge cases" {
     try std.testing.expectEqual(@as(u32, 1), minimal_server.config.max_connections);
     
     // Test with maximum configuration
-    var max_server = net.http.HttpServer.init(.{
+    const max_server = net.http.HttpServer.init(.{
         .port = 65535,
         .max_connections = net.config.max_connections,
         .request_buffer_size = net.config.huge_buffer_size,
