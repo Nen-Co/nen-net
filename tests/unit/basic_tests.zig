@@ -111,3 +111,31 @@ test "inline function memory efficiency" {
     try std.testing.expectEqual(@as(u32, 7), result2);
     try std.testing.expectEqual(@as(u32, 11), result3);
 }
+
+test "inline function with different types" {
+    const result1 = addInline(0, 0);
+    const result2 = addInline(1, 1);
+    const result3 = addInline(1000, 2000);
+    const result4 = addInline(0xFFFFFFFF, 0); // Don't add 1 to avoid overflow
+    
+    try std.testing.expect(result1 == 0);
+    try std.testing.expect(result2 == 2);
+    try std.testing.expect(result3 == 3000);
+    try std.testing.expect(result4 == 0xFFFFFFFF);
+}
+
+test "inline function edge cases" {
+    // Test with maximum values
+    const max_u32 = 0xFFFFFFFF;
+    const result1 = addInline(max_u32, 0);
+    const result2 = addInline(0, max_u32);
+    const result3 = addInline(max_u32, 0); // Don't add 1 to avoid overflow
+    
+    try std.testing.expect(result1 == max_u32);
+    try std.testing.expect(result2 == max_u32);
+    try std.testing.expect(result3 == max_u32); // No overflow
+    
+    // Test with zero
+    const result4 = addInline(0, 0);
+    try std.testing.expect(result4 == 0);
+}
