@@ -38,6 +38,72 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_unit_tests.step);
 
+    // HTTP tests
+    const http_tests = b.addTest(.{
+        .root_source_file = .{ .cwd_relative = "tests/unit/http_tests.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    http_tests.linkLibrary(lib);
+
+    const run_http_tests = b.addRunArtifact(http_tests);
+    test_step.dependOn(&run_http_tests.step);
+
+    // TCP tests
+    const tcp_tests = b.addTest(.{
+        .root_source_file = .{ .cwd_relative = "tests/unit/tcp_tests.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    tcp_tests.linkLibrary(lib);
+
+    const run_tcp_tests = b.addRunArtifact(tcp_tests);
+    test_step.dependOn(&run_tcp_tests.step);
+
+    // WebSocket tests
+    const websocket_tests = b.addTest(.{
+        .root_source_file = .{ .cwd_relative = "tests/unit/websocket_tests.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    websocket_tests.linkLibrary(lib);
+
+    const run_websocket_tests = b.addRunArtifact(websocket_tests);
+    test_step.dependOn(&run_websocket_tests.step);
+
+    // Connection tests
+    const connection_tests = b.addTest(.{
+        .root_source_file = .{ .cwd_relative = "tests/unit/connection_tests.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    connection_tests.linkLibrary(lib);
+
+    const run_connection_tests = b.addRunArtifact(connection_tests);
+    test_step.dependOn(&run_connection_tests.step);
+
+    // Routing tests
+    const routing_tests = b.addTest(.{
+        .root_source_file = .{ .cwd_relative = "tests/unit/routing_tests.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    routing_tests.linkLibrary(lib);
+
+    const run_routing_tests = b.addRunArtifact(routing_tests);
+    test_step.dependOn(&run_routing_tests.step);
+
+    // Performance tests
+    const performance_tests = b.addTest(.{
+        .root_source_file = .{ .cwd_relative = "tests/unit/performance_tests.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    performance_tests.linkLibrary(lib);
+
+    const run_performance_tests = b.addRunArtifact(performance_tests);
+    test_step.dependOn(&run_performance_tests.step);
+
     // Integration tests
     const integration_tests = b.addTest(.{
         .root_source_file = .{ .cwd_relative = "tests/integration/server_tests.zig" },
