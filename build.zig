@@ -47,6 +47,7 @@ pub fn build(b: *std.Build) void {
     http_tests.linkLibrary(lib);
 
 
+
     const run_http_tests = b.addRunArtifact(http_tests);
     test_step.dependOn(&run_http_tests.step);
 
@@ -57,6 +58,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     tcp_tests.linkLibrary(lib);
+
 
 
     const run_tcp_tests = b.addRunArtifact(tcp_tests);
@@ -71,6 +73,7 @@ pub fn build(b: *std.Build) void {
     websocket_tests.linkLibrary(lib);
 
 
+
     const run_websocket_tests = b.addRunArtifact(websocket_tests);
     test_step.dependOn(&run_websocket_tests.step);
 
@@ -81,6 +84,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     connection_tests.linkLibrary(lib);
+
 
 
     const run_connection_tests = b.addRunArtifact(connection_tests);
@@ -95,6 +99,7 @@ pub fn build(b: *std.Build) void {
     routing_tests.linkLibrary(lib);
 
 
+
     const run_routing_tests = b.addRunArtifact(routing_tests);
     test_step.dependOn(&run_routing_tests.step);
 
@@ -105,6 +110,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     performance_tests.linkLibrary(lib);
+
 
 
     const run_performance_tests = b.addRunArtifact(performance_tests);
