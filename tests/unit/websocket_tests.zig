@@ -10,7 +10,7 @@ test "WebSocket Server initialization" {
         .max_connections = 100,
     };
 
-    var ws_server = net.websocket.WebSocketServer.init(config);
+    const ws_server = net.websocket.WebSocketServer.init(config);
     
     // Test configuration is correctly set
     try std.testing.expectEqual(@as(u16, 8080), ws_server.config.port);
