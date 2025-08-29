@@ -11,7 +11,7 @@ test "TCP Client initialization" {
         .buffer_size = 4096,
     };
 
-    var client = net.tcp.TcpClient.init(config);
+    const client = net.tcp.TcpClient.init(config);
     
     // Test configuration is correctly set
     try std.testing.expectEqualStrings("localhost", client.config.host);
@@ -20,7 +20,7 @@ test "TCP Client initialization" {
 }
 
 test "TCP Client connection lifecycle" {
-    var client = net.tcp.TcpClient.init(.{
+    const client = net.tcp.TcpClient.init(.{
         .host = "127.0.0.1",
         .port = 9000,
         .buffer_size = 8192,
@@ -50,7 +50,7 @@ test "TCP Client with different configurations" {
     };
 
     for (configs) |config| {
-        var client = net.tcp.TcpClient.init(config);
+        const client = net.tcp.TcpClient.init(config);
         
         // Test each configuration
         try std.testing.expectEqualStrings(config.host, client.config.host);
@@ -73,7 +73,7 @@ test "TCP Server initialization" {
         .response_buffer_size = 16384,
     };
 
-    var server = net.tcp.TcpServer.init(config);
+    const server = net.tcp.TcpServer.init(config);
     
     // Test configuration is correctly set
     try std.testing.expectEqual(@as(u16, 8080), server.config.port);
@@ -83,7 +83,7 @@ test "TCP Server initialization" {
 }
 
 test "TCP Server start functionality" {
-    var server = net.tcp.TcpServer.init(.{
+    const server = net.tcp.TcpServer.init(.{
         .port = 8080,
         .max_connections = 100,
         .request_buffer_size = 8192,
@@ -103,7 +103,7 @@ test "TCP Server with different configurations" {
     };
 
     for (configs) |config| {
-        var server = net.tcp.TcpServer.init(config);
+        const server = net.tcp.TcpServer.init(config);
         
         // Test each configuration
         try std.testing.expectEqual(config.port, server.config.port);
@@ -173,7 +173,7 @@ test "TCP Client buffer size validation" {
     const buffer_sizes = [_]usize{ 1024, 4096, 8192, 16384 };
     
     for (buffer_sizes) |buffer_size| {
-        var client = net.tcp.TcpClient.init(.{
+        const client = net.tcp.TcpClient.init(.{
             .host = "localhost",
             .port = 8080,
             .buffer_size = buffer_size,

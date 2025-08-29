@@ -10,7 +10,7 @@ test "Router initialization" {
         .{ .method = "POST", .path = "/api", .handler = struct { fn handler() void {} }.handler },
     };
 
-    var router = net.routing.Router.init(&routes);
+    const router = net.routing.Router.init(&routes);
     
     // Test that routes are correctly set
     try std.testing.expectEqual(@as(usize, 2), router.routes.len);
@@ -22,7 +22,7 @@ test "Router initialization" {
 
 test "Router with empty routes" {
     const empty_routes = [_]net.routing.Route{};
-    var router = net.routing.Router.init(&empty_routes);
+    const router = net.routing.Router.init(&empty_routes);
     
     // Test empty router
     try std.testing.expectEqual(@as(usize, 0), router.routes.len);
@@ -33,7 +33,7 @@ test "Router with single route" {
         .{ .method = "GET", .path = "/health", .handler = struct { fn handler() void {} }.handler },
     };
 
-    var router = net.routing.Router.init(&single_route);
+    const router = net.routing.Router.init(&single_route);
     
     try std.testing.expectEqual(@as(usize, 1), router.routes.len);
     try std.testing.expectEqualStrings("GET", router.routes[0].method);
@@ -50,7 +50,7 @@ test "Router with multiple routes" {
         .{ .method = "GET", .path = "/api/status", .handler = struct { fn handler() void {} }.handler },
     };
 
-    var router = net.routing.Router.init(&routes);
+    const router = net.routing.Router.init(&routes);
     
     try std.testing.expectEqual(@as(usize, 6), router.routes.len);
     
@@ -71,7 +71,7 @@ test "Router route finding" {
         .{ .method = "POST", .path = "/api", .handler = struct { fn handler() void {} }.handler },
     };
 
-    var router = net.routing.Router.init(&routes);
+            const router = net.routing.Router.init(&routes);
     
     // Test route finding (currently returns null as it's a placeholder)
     const found_route = router.findRoute("GET", "/");
@@ -90,7 +90,7 @@ test "Router with various HTTP methods" {
             .{ .method = method, .path = "/test", .handler = struct { fn handler() void {} }.handler },
         };
 
-        var router = net.routing.Router.init(&routes);
+        const router = net.routing.Router.init(&routes);
         
         try std.testing.expectEqual(@as(usize, 1), router.routes.len);
         try std.testing.expectEqualStrings(method, router.routes[0].method);
@@ -116,7 +116,7 @@ test "Router with various path patterns" {
             .{ .method = "GET", .path = path, .handler = struct { fn handler() void {} }.handler },
         };
 
-        var router = net.routing.Router.init(&routes);
+        const router = net.routing.Router.init(&routes);
         
         try std.testing.expectEqual(@as(usize, 1), router.routes.len);
         try std.testing.expectEqualStrings(path, router.routes[0].path);
@@ -130,7 +130,7 @@ test "Router edge cases" {
         .{ .method = long_method, .path = "/test", .handler = struct { fn handler() void {} }.handler },
     };
 
-    var router = net.routing.Router.init(&routes);
+    const router = net.routing.Router.init(&routes);
     try std.testing.expectEqual(@as(usize, 1), router.routes.len);
     try std.testing.expectEqualStrings(long_method, router.routes[0].method);
 
@@ -140,7 +140,7 @@ test "Router edge cases" {
         .{ .method = "GET", .path = long_path, .handler = struct { fn handler() void {} }.handler },
     };
 
-    var router2 = net.routing.Router.init(&routes2);
+            const router2 = net.routing.Router.init(&routes2);
     try std.testing.expectEqual(@as(usize, 1), router2.routes.len);
     try std.testing.expectEqualStrings(long_path, router2.routes[0].path);
 }
@@ -170,7 +170,7 @@ test "Router memory efficiency" {
         .{ .method = "POST", .path = "/api", .handler = struct { fn handler() void {} }.handler },
     };
 
-    var router = net.routing.Router.init(&routes);
+    const router = net.routing.Router.init(&routes);
     
     // Test that router structure is compact
     const size = @sizeOf(net.routing.Router);
@@ -179,5 +179,5 @@ test "Router memory efficiency" {
     try std.testing.expect(size <= 16); // 8 bytes for slice pointer + padding
     
     // Test alignment
-    try std.testing.expect(@ptrToInt(&router) % @alignOf(net.routing.Router) == 0);
+    try std.testing.expect(@intFromPtr(&router) % @alignOf(net.routing.Router) == 0);
 }
