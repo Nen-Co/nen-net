@@ -7,13 +7,13 @@ const std = @import("std");
 pub const PerformanceMonitor = struct {
     start_time: i128,
     
-    pub fn init() @This() {
+    pub inline fn init() @This() {
         return @This(){
             .start_time = std.time.nanoTimestamp(),
         };
     }
     
-    pub fn getUptime(self: *const @This()) u64 {
+    pub inline fn getUptime(self: *const @This()) u64 {
         const current_time = std.time.nanoTimestamp();
         return @intCast(current_time - self.start_time);
     }

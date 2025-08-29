@@ -8,18 +8,18 @@ pub const Connection = struct {
     id: u64,
     is_active: bool,
     
-    pub fn init(id: u64) @This() {
+    pub inline fn init(id: u64) @This() {
         return @This(){
             .id = id,
             .is_active = false,
         };
     }
     
-    pub fn activate(self: *@This()) void {
+    pub inline fn activate(self: *@This()) void {
         self.is_active = true;
     }
     
-    pub fn deactivate(self: *@This()) void {
+    pub inline fn deactivate(self: *@This()) void {
         self.is_active = false;
     }
 };

@@ -33,13 +33,13 @@ pub const HttpResponse = struct {
 pub const HttpServer = struct {
     config: config.ServerConfig,
     
-    pub fn init(config_options: config.ServerConfig) @This() {
+    pub inline fn init(config_options: config.ServerConfig) @This() {
         return @This(){
             .config = config_options,
         };
     }
     
-    pub fn addRoute(self: *@This(), method: []const u8, path: []const u8, handler: anytype) !void {
+    pub inline fn addRoute(self: *@This(), method: []const u8, path: []const u8, handler: anytype) !void {
         _ = self;
         _ = method;
         _ = path;
@@ -47,7 +47,7 @@ pub const HttpServer = struct {
         // TODO: Implement route handling
     }
     
-    pub fn start(self: *@This()) !void {
+    pub inline fn start(self: *@This()) !void {
         _ = self;
         // TODO: Implement server start
     }
