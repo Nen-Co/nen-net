@@ -104,6 +104,21 @@ pub fn build(b: *std.Build) void {
     const run_performance_tests = b.addRunArtifact(performance_tests);
     test_step.dependOn(&run_performance_tests.step);
 
+    // Standard library comparison benchmark
+    const benchmark = b.addExecutable(.{
+        .name = "standard_library_comparison",
+        .root_source_file = .{ .cwd_relative = "benchmarks/standard_library_comparison.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    benchmark.linkLibrary(lib);
+    
+
+
+    const run_benchmark = b.addRunArtifact(benchmark);
+    const benchmark_step = b.step("benchmark", "Run standard library comparison benchmark");
+    benchmark_step.dependOn(&run_benchmark.step);
+
     // Integration tests
     const integration_tests = b.addTest(.{
         .root_source_file = .{ .cwd_relative = "tests/integration/server_tests.zig" },
@@ -175,8 +190,8 @@ pub fn build(b: *std.Build) void {
     benchmarks.linkLibrary(lib);
 
     const run_benchmarks = b.addRunArtifact(benchmarks);
-    const benchmark_step = b.step("benchmark", "Run benchmarks");
-    benchmark_step.dependOn(&run_benchmarks.step);
+    const benchmarks_step = b.step("benchmarks", "Run all benchmarks");
+    benchmarks_step.dependOn(&run_benchmarks.step);
 
     // All tests
     const all_tests = b.step("test-all", "Run all tests");
