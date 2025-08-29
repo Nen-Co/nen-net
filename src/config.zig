@@ -138,3 +138,30 @@ pub const max_connections_per_ip = 100;      // Maximum connections per IP
 pub const enable_rate_limiting = true;       // Enable rate limiting
 pub const enable_ip_blacklisting = true;     // Enable IP blacklisting
 pub const blacklist_threshold = 1000;        // Blacklist after 1000 violations
+
+// Inline helper functions for configuration validation
+pub inline fn isValidPort(port: u16) bool {
+    return port > 0 and port <= 65535;
+}
+
+pub inline fn isValidBufferSize(size: usize) bool {
+    return size > 0 and size <= huge_buffer_size;
+}
+
+pub inline fn isValidConnectionCount(count: u32) bool {
+    return count > 0 and count <= huge_pool_size;
+}
+
+pub inline fn getOptimalBufferSize(expected_size: usize) usize {
+    if (expected_size <= small_buffer_size) return small_buffer_size;
+    if (expected_size <= medium_buffer_size) return medium_buffer_size;
+    if (expected_size <= large_buffer_size) return large_buffer_size;
+    return huge_buffer_size;
+}
+
+pub inline fn getOptimalPoolSize(expected_connections: u32) u32 {
+    if (expected_connections <= small_pool_size) return small_pool_size;
+    if (expected_connections <= medium_pool_size) return medium_pool_size;
+    if (expected_connections <= large_pool_size) return large_pool_size;
+    return huge_pool_size;
+}

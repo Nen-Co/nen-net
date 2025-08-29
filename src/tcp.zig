@@ -8,24 +8,24 @@ const config = @import("config.zig");
 pub const TcpClient = struct {
     config: config.ClientConfig,
     
-    pub fn init(config_options: config.ClientConfig) @This() {
+    pub inline fn init(config_options: config.ClientConfig) @This() {
         return @This(){
             .config = config_options,
         };
     }
     
-    pub fn connect(self: *@This()) !void {
+    pub inline fn connect(self: *@This()) !void {
         _ = self;
         // TODO: Implement connection
     }
     
-    pub fn send(self: *@This(), data: []const u8) !void {
+    pub inline fn send(self: *@This(), data: []const u8) !void {
         _ = self;
         _ = data;
         // TODO: Implement send
     }
     
-    pub fn receive(self: *@This()) ![]const u8 {
+    pub inline fn receive(self: *@This()) ![]const u8 {
         _ = self;
         // TODO: Implement receive
         return "demo response";
@@ -36,13 +36,13 @@ pub const TcpClient = struct {
 pub const TcpServer = struct {
     config: config.ServerConfig,
     
-    pub fn init(config_options: config.ServerConfig) @This() {
+    pub inline fn init(config_options: config.ServerConfig) @This() {
         return @This(){
             .config = config_options,
         };
     }
     
-    pub fn start(self: *@This()) !void {
+    pub inline fn start(self: *@This()) !void {
         _ = self;
         // TODO: Implement server start
     }

@@ -75,6 +75,37 @@ pub inline fn startPerformanceMonitoring() !PerformanceMonitor {
     return PerformanceMonitor.init();
 }
 
+// Inline utility functions for common operations
+pub inline fn isValidServerConfig(config_options: ServerConfig) bool {
+    return config.isValidPort(config_options.port) and
+           config.isValidBufferSize(config_options.request_buffer_size) and
+           config.isValidBufferSize(config_options.response_buffer_size) and
+           config.isValidConnectionCount(config_options.max_connections);
+}
+
+pub inline fn isValidClientConfig(config_options: ClientConfig) bool {
+    return config_options.host.len > 0 and
+           config.isValidPort(config_options.port) and
+           config.isValidBufferSize(config_options.buffer_size);
+}
+
+pub inline fn getOptimalServerConfig(port: u16, expected_connections: u32) ServerConfig {
+    return ServerConfig{
+        .port = port,
+        .max_connections = config.getOptimalPoolSize(expected_connections),
+        .request_buffer_size = config.getOptimalBufferSize(8192),
+        .response_buffer_size = config.getOptimalBufferSize(16384),
+    };
+}
+
+pub inline fn getOptimalClientConfig(host: []const u8, port: u16) ClientConfig {
+    return ClientConfig{
+        .host = host,
+        .port = port,
+        .buffer_size = config.getOptimalBufferSize(4096),
+    };
+}
+
 // Version information
 pub const VERSION = "0.1.0";
 pub const VERSION_STRING = "Nen Net v" ++ VERSION;
