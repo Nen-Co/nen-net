@@ -1,0 +1,46 @@
+# Zig build artifacts
+zig-out/
+zig-cache/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Test artifacts
+test_*.json
+perf_*.json
+network_*.json
+
+# Network test files
+test_server.pid
+test_client.pid
+*.sock
+*.socket
+
+# Performance test results
+benchmark_results/
+performance_logs/
+memory_dumps/
