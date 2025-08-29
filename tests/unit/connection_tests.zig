@@ -6,7 +6,7 @@ const net = @import("../../src/lib.zig");
 
 test "Connection initialization" {
     const connection_id: u64 = 12345;
-    var conn = net.connection.Connection.init(connection_id);
+    const conn = net.connection.Connection.init(connection_id);
     
     // Test initial state
     try std.testing.expectEqual(connection_id, conn.id);
@@ -127,7 +127,7 @@ test "Connection performance" {
     const start_time = std.time.nanoTimestamp();
     
     for (0..iterations) |i| {
-        var conn = net.connection.Connection.init(@intCast(i));
+        var conn = net.connection.Connection.init(@as(u64, @intCast(i)));
         conn.activate();
         conn.deactivate();
         conn.activate();
@@ -135,7 +135,7 @@ test "Connection performance" {
     }
     
     const end_time = std.time.nanoTimestamp();
-    const total_time_ns = @intCast(u64, end_time - start_time);
+    const total_time_ns = @as(u64, @intCast(end_time - start_time));
     const avg_time_ns = total_time_ns / iterations;
     
     // Each connection operation should be very fast (inline functions)
@@ -152,7 +152,7 @@ test "Connection memory layout" {
     try std.testing.expect(size <= 16); // 8 bytes for u64 + 1 byte for bool + padding
     
     // Test alignment
-    try std.testing.expect(@ptrToInt(&conn) % @alignOf(net.connection.Connection) == 0);
+    try std.testing.expect(@intFromPtr(&conn) % @alignOf(net.connection.Connection) == 0);
 }
 
 test "Connection concurrent operations" {
