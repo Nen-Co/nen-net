@@ -133,19 +133,23 @@ pub fn build(b: *std.Build) void {
 
     // Integration tests (placeholder - will be implemented later)
     const integration_step = b.step("test-integration", "Run integration tests");
-    // integration_step.dependOn(&run_integration_tests.step);
+    // For now, just run the unit tests as integration tests are not yet implemented
+    integration_step.dependOn(test_step);
 
     // Performance tests (placeholder - will be implemented later)
     const perf_step = b.step("test-perf", "Run performance tests");
-    // perf_step.dependOn(&run_perf_tests.step);
+    // For now, just run the unit tests as performance tests are not yet implemented
+    perf_step.dependOn(test_step);
 
     // Memory tests (placeholder - will be implemented later)
     const memory_step = b.step("test-memory", "Run memory tests");
-    // memory_step.dependOn(&run_memory_tests.step);
+    // For now, just run the unit tests as memory tests are not yet implemented
+    memory_step.dependOn(test_step);
 
     // Stress tests (placeholder - will be implemented later)
     const stress_step = b.step("test-stress", "Run stress tests");
-    // stress_step.dependOn(&run_stress_tests.step);
+    // For now, just run the unit tests as stress tests are not yet implemented
+    stress_step.dependOn(test_step);
 
     // Examples
     const examples = b.addExecutable(.{
