@@ -7,24 +7,24 @@ const config = @import("config.zig");
 // TCP client with static allocation
 pub const TcpClient = struct {
     config: config.ClientConfig,
-    
+
     pub inline fn init(config_options: config.ClientConfig) @This() {
         return @This(){
             .config = config_options,
         };
     }
-    
+
     pub inline fn connect(self: *@This()) !void {
         _ = self;
         // TODO: Implement connection
     }
-    
+
     pub inline fn send(self: *@This(), data: []const u8) !void {
         _ = self;
         _ = data;
         // TODO: Implement send
     }
-    
+
     pub inline fn receive(self: *@This()) ![]const u8 {
         _ = self;
         // TODO: Implement receive
@@ -35,13 +35,13 @@ pub const TcpClient = struct {
 // TCP server with static allocation
 pub const TcpServer = struct {
     config: config.ServerConfig,
-    
+
     pub inline fn init(config_options: config.ServerConfig) @This() {
         return @This(){
             .config = config_options,
         };
     }
-    
+
     pub inline fn start(self: *@This()) !void {
         _ = self;
         // TODO: Implement server start
