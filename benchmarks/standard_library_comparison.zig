@@ -50,7 +50,7 @@ pub fn main() !void {
     try benchmarkFunctionCallOverhead();
     try benchmarkBufferOperations();
     try benchmarkConfigurationSetup();
-    
+
     std.debug.print("\nBenchmark completed!\n", .{});
 }
 
@@ -93,7 +93,7 @@ fn benchmarkFunctionCallOverhead() !void {
     std.debug.print("   Testing inline vs regular function calls\n\n", .{});
 
     const iterations = 100000;
-    
+
     // Test inline function (nen-net style)
     var start_time = time.nanoTimestamp();
     var sum: u64 = 0;
@@ -123,7 +123,7 @@ fn benchmarkBufferOperations() !void {
 
     const buffer_size = 8192;
     const iterations = 10000;
-    
+
     // Test nen-net style (pre-allocated buffer)
     var static_buffer: [buffer_size]u8 = undefined;
     var start_time = time.nanoTimestamp();
@@ -159,7 +159,7 @@ fn benchmarkConfigurationSetup() !void {
     std.debug.print("   Testing structured vs manual configuration\n\n", .{});
 
     const iterations = 10000;
-    
+
     // Test nen-net style (structured configuration)
     var start_time = time.nanoTimestamp();
     for (0..iterations) |i| {
@@ -175,13 +175,13 @@ fn benchmarkConfigurationSetup() !void {
         const max_conn: u32 = 1000;
         const req_buf: u32 = 8192;
         const resp_buf: u32 = 16384;
-        
+
         // Manual validation
         if (port < 1024 or port > 65535) continue;
         if (max_conn == 0 or max_conn > 1000000) continue;
         if (req_buf < 1024 or req_buf > 1048576) continue;
         if (resp_buf < 1024 or resp_buf > 1048576) continue;
-        
+
         // Use variables to avoid unused variable warnings
         if (port == 0 or max_conn == 0 or req_buf == 0 or resp_buf == 0) continue;
     }

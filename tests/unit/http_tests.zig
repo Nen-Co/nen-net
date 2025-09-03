@@ -2,7 +2,7 @@
 // Tests HTTP server functionality and inline functions
 
 const std = @import("std");
-const net = @import("../../src/lib.zig");
+const net = @import("nen-net");
 
 test "HTTP Server initialization" {
     const config = net.config.ServerConfig{
@@ -13,7 +13,7 @@ test "HTTP Server initialization" {
     };
 
     const server = net.http.HttpServer.init(config);
-    
+
     // Test configuration is correctly set
     try std.testing.expectEqual(@as(u16, 8080), server.config.port);
     try std.testing.expectEqual(@as(u32, 100), server.config.max_connections);
@@ -22,7 +22,7 @@ test "HTTP Server initialization" {
 }
 
 test "HTTP Server route management" {
-    const server = net.http.HttpServer.init(.{
+    var server = net.http.HttpServer.init(.{
         .port = 8080,
         .max_connections = 100,
         .request_buffer_size = 8192,
@@ -47,7 +47,7 @@ test "HTTP Server route management" {
 }
 
 test "HTTP Server start functionality" {
-    const server = net.http.HttpServer.init(.{
+    var server = net.http.HttpServer.init(.{
         .port = 8080,
         .max_connections = 100,
         .request_buffer_size = 8192,
@@ -109,19 +109,19 @@ test "HTTP Server with different configurations" {
     };
 
     for (configs) |config| {
-        const server = net.http.HttpServer.init(config);
-        
+        var server = net.http.HttpServer.init(config);
+
         // Test each configuration
         try std.testing.expectEqual(config.port, server.config.port);
         try std.testing.expectEqual(config.max_connections, server.config.max_connections);
         try std.testing.expectEqual(config.request_buffer_size, server.config.request_buffer_size);
         try std.testing.expectEqual(config.response_buffer_size, server.config.response_buffer_size);
-        
+
         // Test route addition
         try server.addRoute("GET", "/test", struct {
             fn handler() void {}
         }.handler);
-        
+
         // Test server start
         try server.start();
     }
@@ -129,27 +129,27 @@ test "HTTP Server with different configurations" {
 
 test "HTTP Server edge cases" {
     // Test with minimal configuration
-    const minimal_server = net.http.HttpServer.init(.{
+    var minimal_server = net.http.HttpServer.init(.{
         .port = 1,
         .max_connections = 1,
         .request_buffer_size = 1024,
         .response_buffer_size = 1024,
     });
-    
+
     try std.testing.expectEqual(@as(u16, 1), minimal_server.config.port);
     try std.testing.expectEqual(@as(u32, 1), minimal_server.config.max_connections);
-    
+
     // Test with maximum configuration
-    const max_server = net.http.HttpServer.init(.{
+    var max_server = net.http.HttpServer.init(.{
         .port = 65535,
         .max_connections = net.config.max_connections,
         .request_buffer_size = net.config.huge_buffer_size,
         .response_buffer_size = net.config.huge_buffer_size,
     });
-    
+
     try std.testing.expectEqual(@as(u16, 65535), max_server.config.port);
     try std.testing.expectEqual(net.config.max_connections, max_server.config.max_connections);
-    
+
     // Both servers should work
     try minimal_server.start();
     try max_server.start();

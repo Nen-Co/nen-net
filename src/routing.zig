@@ -7,19 +7,19 @@ const std = @import("std");
 pub const Route = struct {
     method: []const u8,
     path: []const u8,
-    handler: fn() void, // Placeholder function type
+    handler: fn () void, // Placeholder function type
 };
 
 // Router with static allocation
 pub const Router = struct {
     routes: []const Route,
-    
+
     pub inline fn init(routes: []const Route) @This() {
         return @This(){
             .routes = routes,
         };
     }
-    
+
     pub inline fn findRoute(self: *const @This(), method: []const u8, path: []const u8) ?*const Route {
         _ = self;
         _ = method;

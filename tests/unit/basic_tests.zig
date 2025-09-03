@@ -19,7 +19,7 @@ test "string operations" {
 test "number operations" {
     const port = 8080;
     const max_connections = 1000;
-    
+
     try std.testing.expect(port > 0);
     try std.testing.expect(max_connections > 0);
     try std.testing.expect(max_connections <= 1000000); // Reasonable upper limit
@@ -38,24 +38,24 @@ inline fn addInline(a: u32, b: u32) u32 {
 
 test "performance measurement" {
     const iterations = 1000;
-    
+
     const start_time = std.time.nanoTimestamp();
-    
+
     for (0..iterations) |_| {
         _ = addInline(1, 1);
     }
-    
+
     const end_time = std.time.nanoTimestamp();
     const total_time_ns = @as(u64, @intCast(end_time - start_time));
     const avg_time_ns = total_time_ns / iterations;
-    
+
     // Inline function calls should be very fast
     try std.testing.expect(avg_time_ns < 1000); // Less than 1 microsecond per call
 }
 
 test "inline function performance comparison" {
     const iterations = 10000;
-    
+
     // Test inline function performance
     const start_time_inline = std.time.nanoTimestamp();
     for (0..iterations) |_| {
@@ -63,7 +63,7 @@ test "inline function performance comparison" {
     }
     const end_time_inline = std.time.nanoTimestamp();
     const inline_time = @as(u64, @intCast(end_time_inline - start_time_inline));
-    
+
     // Test regular function performance
     const start_time_regular = std.time.nanoTimestamp();
     for (0..iterations) |_| {
@@ -71,11 +71,11 @@ test "inline function performance comparison" {
     }
     const end_time_regular = std.time.nanoTimestamp();
     const regular_time = @as(u64, @intCast(end_time_regular - start_time_regular));
-    
+
     // Both should be fast
     try std.testing.expect(inline_time < 100000); // Less than 100 microseconds for 10k calls
     try std.testing.expect(regular_time < 100000); // Less than 100 microseconds for 10k calls
-    
+
     // Both should be reasonable
     try std.testing.expect(inline_time > 0);
     try std.testing.expect(regular_time > 0);
@@ -106,7 +106,7 @@ test "inline function memory efficiency" {
     const result1 = addInline(1, 2);
     const result2 = addInline(3, 4);
     const result3 = addInline(5, 6);
-    
+
     try std.testing.expectEqual(@as(u32, 3), result1);
     try std.testing.expectEqual(@as(u32, 7), result2);
     try std.testing.expectEqual(@as(u32, 11), result3);
@@ -117,7 +117,7 @@ test "inline function with different types" {
     const result2 = addInline(1, 1);
     const result3 = addInline(1000, 2000);
     const result4 = addInline(0xFFFFFFFF, 0); // Don't add 1 to avoid overflow
-    
+
     try std.testing.expect(result1 == 0);
     try std.testing.expect(result2 == 2);
     try std.testing.expect(result3 == 3000);
@@ -130,11 +130,11 @@ test "inline function edge cases" {
     const result1 = addInline(max_u32, 0);
     const result2 = addInline(0, max_u32);
     const result3 = addInline(max_u32, 0); // Don't add 1 to avoid overflow
-    
+
     try std.testing.expect(result1 == max_u32);
     try std.testing.expect(result2 == max_u32);
     try std.testing.expect(result3 == max_u32); // No overflow
-    
+
     // Test with zero
     const result4 = addInline(0, 0);
     try std.testing.expect(result4 == 0);

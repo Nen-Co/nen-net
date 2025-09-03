@@ -62,11 +62,11 @@ pub inline fn createWebSocketServer(port: u16) !WebSocketServer {
 // Quick server setup
 pub inline fn quickServer(port: u16, routes: []const Route) !HttpServer {
     var server = try createHttpServer(port);
-    
+
     for (routes) |route| {
         try server.addRoute(route.method, route.path, route.handler);
     }
-    
+
     return server;
 }
 
@@ -78,15 +78,15 @@ pub inline fn startPerformanceMonitoring() !PerformanceMonitor {
 // Inline utility functions for common operations
 pub inline fn isValidServerConfig(config_options: ServerConfig) bool {
     return config.isValidPort(config_options.port) and
-           config.isValidBufferSize(config_options.request_buffer_size) and
-           config.isValidBufferSize(config_options.response_buffer_size) and
-           config.isValidConnectionCount(config_options.max_connections);
+        config.isValidBufferSize(config_options.request_buffer_size) and
+        config.isValidBufferSize(config_options.response_buffer_size) and
+        config.isValidConnectionCount(config_options.max_connections);
 }
 
 pub inline fn isValidClientConfig(config_options: ClientConfig) bool {
     return config_options.host.len > 0 and
-           config.isValidPort(config_options.port) and
-           config.isValidBufferSize(config_options.buffer_size);
+        config.isValidPort(config_options.port) and
+        config.isValidBufferSize(config_options.buffer_size);
 }
 
 pub inline fn getOptimalServerConfig(port: u16, expected_connections: u32) ServerConfig {
@@ -112,23 +112,23 @@ pub const VERSION_STRING = "Nen Net v" ++ VERSION;
 
 // Feature flags
 pub const FEATURES = struct {
-    pub const static_memory = true;        // Zero dynamic allocation
-    pub const inline_functions = true;     // Critical operations are inline
-    pub const connection_pooling = true;   // Pre-allocated connection pools
-    pub const http_server = true;          // HTTP/1.1 server
-    pub const tcp_framework = true;        // TCP client/server
-    pub const websocket_support = true;    // WebSocket handling
+    pub const static_memory = true; // Zero dynamic allocation
+    pub const inline_functions = true; // Critical operations are inline
+    pub const connection_pooling = true; // Pre-allocated connection pools
+    pub const http_server = true; // HTTP/1.1 server
+    pub const tcp_framework = true; // TCP client/server
+    pub const websocket_support = true; // WebSocket handling
     pub const performance_monitoring = true; // Built-in performance tracking
-    pub const connection_batching = true;  // Connection operation batching
+    pub const connection_batching = true; // Connection operation batching
 };
 
 // Performance targets
 pub const PERFORMANCE_TARGETS = struct {
-    pub const max_concurrent_connections: u32 = 100000;     // 100K concurrent connections
-    pub const requests_per_second: u32 = 1000000;           // 1M requests/second
-    pub const max_latency_ms: u64 = 1;                     // <1ms latency
-    pub const memory_overhead_percent: f64 = 5.0;           // <5% memory overhead
-    pub const startup_time_ms: u64 = 10;                   // <10ms startup
+    pub const max_concurrent_connections: u32 = 100000; // 100K concurrent connections
+    pub const requests_per_second: u32 = 1000000; // 1M requests/second
+    pub const max_latency_ms: u64 = 1; // <1ms latency
+    pub const memory_overhead_percent: f64 = 5.0; // <5% memory overhead
+    pub const startup_time_ms: u64 = 10; // <10ms startup
 };
 
 // Error types

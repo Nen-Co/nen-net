@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["main", "master", "develop"]
+    branches: [ main, develop ]
   pull_request:
-    branches: ["main", "master", "develop"]
+    branches: [ main, develop ]
 
 jobs:
   test-linux:
@@ -15,47 +15,64 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
 
-      - name: Setup Zig 0.15.1
+      - name: Setup Zig 0.14.1
         uses: goto-bus-stop/setup-zig@v2
         with:
-          version: 0.15.1
+          version: 0.14.1
 
-      - name: Verify Zig + workspace
+      - name: Verify Zig installation
         run: |
           set -euo pipefail
-          set -x
           zig version
-          echo "-- ls repo --"
-          ls -la
-          echo "-- ls src --"
-          ls -la src || true
+          which zig
 
-      - name: Build library
+      - name: Build nen-net
         run: |
           set -euo pipefail
           zig build
 
-      - name: Run tests (known to have import path issues)
+      - name: Run tests
         run: |
           set -euo pipefail
-          echo "Note: Tests have known compilation issues due to Zig import path limitations"
-          echo "Library builds successfully, but individual test files cannot import from relative paths"
-          echo "This is a known limitation of Zig's test system, not a bug in nen-net"
-          echo "Skipping test execution to avoid CI failures"
+          zig build test
 
-      - name: Build release binary
+      - name: Run integration tests
         run: |
           set -euo pipefail
-          zig build --release=safe
+          zig build test-integration
 
-      - name: Upload build artifact
+      - name: Run performance tests
+        run: |
+          set -euo pipefail
+          zig build test-perf
+
+      - name: Run memory tests
+        run: |
+          set -euo pipefail
+          zig build test-memory
+
+      - name: Run stress tests
+        run: |
+          set -euo pipefail
+          zig build test-stress
+
+      - name: Build examples
+        run: |
+          set -euo pipefail
+          zig build examples
+
+      - name: Build benchmarks
+        run: |
+          set -euo pipefail
+          zig build benchmarks
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nen-net-build-linux
-          path: |
-            zig-out/bin
-            zig-out
+          name: nen-net-linux-build
+          path: zig-out/
 
   test-macos:
     name: Test & Build (macOS)
@@ -65,47 +82,64 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
 
-      - name: Setup Zig 0.15.1
+      - name: Setup Zig 0.14.1
         uses: goto-bus-stop/setup-zig@v2
         with:
-          version: 0.15.1
+          version: 0.14.1
 
-      - name: Verify Zig + workspace
+      - name: Verify Zig installation
         run: |
           set -euo pipefail
-          set -x
           zig version
-          echo "-- ls repo --"
-          ls -la
-          echo "-- ls src --"
-          ls -la src || true
+          which zig
 
-      - name: Build library
+      - name: Build nen-net
         run: |
           set -euo pipefail
           zig build
 
-      - name: Run tests (known to have import path issues)
+      - name: Run tests
         run: |
           set -euo pipefail
-          echo "Note: Tests have known compilation issues due to Zig import path limitations"
-          echo "Library builds successfully, but individual test files cannot import from relative paths"
-          echo "This is a known limitation of Zig's test system, not a bug in nen-net"
-          echo "Skipping test execution to avoid CI failures"
+          zig build test
 
-      - name: Build release binary
+      - name: Run integration tests
         run: |
           set -euo pipefail
-          zig build --release=safe
+          zig build test-integration
 
-      - name: Upload build artifact
+      - name: Run performance tests
+        run: |
+          set -euo pipefail
+          zig build test-perf
+
+      - name: Run memory tests
+        run: |
+          set -euo pipefail
+          zig build test-memory
+
+      - name: Run stress tests
+        run: |
+          set -euo pipefail
+          zig build test-stress
+
+      - name: Build examples
+        run: |
+          set -euo pipefail
+          zig build examples
+
+      - name: Build benchmarks
+        run: |
+          set -euo pipefail
+          zig build benchmarks
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nen-net-build-macos
-          path: |
-            zig-out/bin
-            zig-out
+          name: nen-net-macos-build
+          path: zig-out/
 
   test-windows:
     name: Test & Build (Windows)
@@ -115,39 +149,52 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
 
-      - name: Setup Zig 0.15.1
+      - name: Setup Zig 0.14.1
         uses: goto-bus-stop/setup-zig@v2
         with:
-          version: 0.15.1
+          version: 0.14.1
 
-      - name: Verify Zig + workspace
+      - name: Verify Zig installation
         run: |
           zig version
-          echo "-- ls repo --"
-          dir
-          echo "-- ls src --"
-          dir src
+          where zig
 
-      - name: Build library
+      - name: Build nen-net
         run: |
           zig build
 
-      - name: Run tests (known to have import path issues)
+      - name: Run tests
         run: |
-          echo "Note: Tests have known compilation issues due to Zig import path limitations"
-          echo "Library builds successfully, but individual test files cannot import from relative paths"
-          echo "This is a known limitation of Zig's test system, not a bug in nen-net"
-          echo "Skipping test execution to avoid CI failures"
+          zig build test
 
-      - name: Build release binary
+      - name: Run integration tests
         run: |
-          zig build --release=safe
+          zig build test-integration
 
-      - name: Upload build artifact
+      - name: Run performance tests
+        run: |
+          zig build test-perf
+
+      - name: Run memory tests
+        run: |
+          zig build test-memory
+
+      - name: Run stress tests
+        run: |
+          zig build test-stress
+
+      - name: Build examples
+        run: |
+          zig build examples
+
+      - name: Build benchmarks
+        run: |
+          zig build benchmarks
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nen-net-build-windows
-          path: |
-            zig-out/bin
-            zig-out
+          name: nen-net-windows-build
+          path: zig-out/

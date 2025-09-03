@@ -2,7 +2,7 @@
 // Tests TCP client/server functionality and inline functions
 
 const std = @import("std");
-const net = @import("../../src/lib.zig");
+const net = @import("nen-net");
 
 test "TCP Client initialization" {
     const config = net.config.ClientConfig{
@@ -12,7 +12,7 @@ test "TCP Client initialization" {
     };
 
     const client = net.tcp.TcpClient.init(config);
-    
+
     // Test configuration is correctly set
     try std.testing.expectEqualStrings("localhost", client.config.host);
     try std.testing.expectEqual(@as(u16, 8080), client.config.port);
@@ -20,7 +20,7 @@ test "TCP Client initialization" {
 }
 
 test "TCP Client connection lifecycle" {
-    const client = net.tcp.TcpClient.init(.{
+    var client = net.tcp.TcpClient.init(.{
         .host = "127.0.0.1",
         .port = 9000,
         .buffer_size = 8192,
@@ -28,15 +28,15 @@ test "TCP Client connection lifecycle" {
 
     // Test connection (demo mode - should not crash)
     try client.connect();
-    
+
     // Test send functionality
     try client.send("Hello, TCP Server!");
     try client.send("Another message");
-    
+
     // Test receive functionality
     const response1 = try client.receive();
     const response2 = try client.receive();
-    
+
     // Both responses should be the demo response
     try std.testing.expectEqualStrings("demo response", response1);
     try std.testing.expectEqualStrings("demo response", response2);
@@ -50,13 +50,13 @@ test "TCP Client with different configurations" {
     };
 
     for (configs) |config| {
-        const client = net.tcp.TcpClient.init(config);
-        
+        var client = net.tcp.TcpClient.init(config);
+
         // Test each configuration
         try std.testing.expectEqualStrings(config.host, client.config.host);
         try std.testing.expectEqual(config.port, client.config.port);
         try std.testing.expectEqual(config.buffer_size, client.config.buffer_size);
-        
+
         // Test basic operations
         try client.connect();
         try client.send("test");
@@ -74,7 +74,7 @@ test "TCP Server initialization" {
     };
 
     const server = net.tcp.TcpServer.init(config);
-    
+
     // Test configuration is correctly set
     try std.testing.expectEqual(@as(u16, 8080), server.config.port);
     try std.testing.expectEqual(@as(u32, 100), server.config.max_connections);
@@ -83,7 +83,7 @@ test "TCP Server initialization" {
 }
 
 test "TCP Server start functionality" {
-    const server = net.tcp.TcpServer.init(.{
+    var server = net.tcp.TcpServer.init(.{
         .port = 8080,
         .max_connections = 100,
         .request_buffer_size = 8192,
@@ -103,14 +103,14 @@ test "TCP Server with different configurations" {
     };
 
     for (configs) |config| {
-        const server = net.tcp.TcpServer.init(config);
-        
+        var server = net.tcp.TcpServer.init(config);
+
         // Test each configuration
         try std.testing.expectEqual(config.port, server.config.port);
         try std.testing.expectEqual(config.max_connections, server.config.max_connections);
         try std.testing.expectEqual(config.request_buffer_size, server.config.request_buffer_size);
         try std.testing.expectEqual(config.response_buffer_size, server.config.response_buffer_size);
-        
+
         // Test server start
         try server.start();
     }
@@ -124,10 +124,10 @@ test "TCP Server edge cases" {
         .request_buffer_size = 1024,
         .response_buffer_size = 1024,
     });
-    
+
     try std.testing.expectEqual(@as(u16, 1), minimal_server.config.port);
     try std.testing.expectEqual(@as(u32, 1), minimal_server.config.max_connections);
-    
+
     // Test with maximum configuration
     var max_server = net.tcp.TcpServer.init(.{
         .port = 65535,
@@ -135,10 +135,10 @@ test "TCP Server edge cases" {
         .request_buffer_size = net.config.huge_buffer_size,
         .response_buffer_size = net.config.huge_buffer_size,
     });
-    
+
     try std.testing.expectEqual(@as(u16, 65535), max_server.config.port);
     try std.testing.expectEqual(net.config.max_connections, max_server.config.max_connections);
-    
+
     // Both servers should work
     try minimal_server.start();
     try max_server.start();
@@ -171,16 +171,16 @@ test "TCP Client data handling" {
 test "TCP Client buffer size validation" {
     // Test with various buffer sizes
     const buffer_sizes = [_]usize{ 1024, 4096, 8192, 16384 };
-    
+
     for (buffer_sizes) |buffer_size| {
-        const client = net.tcp.TcpClient.init(.{
+        var client = net.tcp.TcpClient.init(.{
             .host = "localhost",
             .port = 8080,
             .buffer_size = buffer_size,
         });
-        
+
         try std.testing.expectEqual(buffer_size, client.config.buffer_size);
-        
+
         // Test operations with this buffer size
         try client.connect();
         try client.send("test");
