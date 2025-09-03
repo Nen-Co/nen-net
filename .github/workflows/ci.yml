@@ -191,7 +191,7 @@ jobs:
 
       - name: Build benchmarks
         run: |
-          zig build benchmarks
+          zig build benchmark
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
