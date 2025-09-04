@@ -58,11 +58,10 @@ jobs:
           set -euo pipefail
           zig build test-stress
 
-      # Examples removed - will be added when core functionality is implemented
-      # - name: Build examples
-      #   run: |
-      #     set -euo pipefail
-      #     zig build examples
+      - name: Build examples
+        run: |
+          set -euo pipefail
+          zig build examples
 
       - name: Build benchmarks
         run: |
@@ -126,11 +125,10 @@ jobs:
           set -euo pipefail
           zig build test-stress
 
-      # Examples removed - will be added when core functionality is implemented
-      # - name: Build examples
-      #   run: |
-      #     set -euo pipefail
-      #     zig build examples
+      - name: Build examples
+        run: |
+          set -euo pipefail
+          zig build examples
 
       - name: Build benchmarks
         run: |

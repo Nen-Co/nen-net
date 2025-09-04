@@ -74,7 +74,7 @@ test "HTTP Request structure" {
     try std.testing.expectEqual(net.http.Method.POST, request.method);
     try std.testing.expectEqualStrings("/api/users", request.path);
     try std.testing.expectEqual(@as(u8, 2), request.header_count);
-    
+
     const content_type = request.getHeader("Content-Type");
     try std.testing.expect(content_type != null);
     try std.testing.expectEqualStrings("application/json", content_type.?);

@@ -7,7 +7,7 @@ const net = @import("nen-net");
 // Example route handlers
 fn handleRoot(request: *net.HttpRequest, response: *net.HttpResponse) void {
     _ = request; // Suppress unused parameter warning
-    
+
     response.status_code = .OK;
     response.setBody("Hello from Nen Net HTTP Server!");
     response.addHeader("Content-Type", "text/plain") catch {};
@@ -15,7 +15,7 @@ fn handleRoot(request: *net.HttpRequest, response: *net.HttpResponse) void {
 
 fn handleHealth(request: *net.HttpRequest, response: *net.HttpResponse) void {
     _ = request; // Suppress unused parameter warning
-    
+
     response.status_code = .OK;
     response.setBody("{\"status\":\"healthy\",\"timestamp\":\"2024-01-01T00:00:00Z\"}");
     response.addHeader("Content-Type", "application/json") catch {};
@@ -29,7 +29,7 @@ fn handleEcho(request: *net.HttpRequest, response: *net.HttpResponse) void {
 
 fn handleNotFound(request: *net.HttpRequest, response: *net.HttpResponse) void {
     _ = request; // Suppress unused parameter warning
-    
+
     response.status_code = .NOT_FOUND;
     response.setBody("404 - Not Found");
     response.addHeader("Content-Type", "text/plain") catch {};
@@ -78,12 +78,12 @@ pub fn main() !void {
 
     // Test HTTP parsing
     std.debug.print("\n🔧 HTTP parsing tests:\n", .{});
-    
+
     // Test method parsing
     const get_method = net.HttpParser.parseMethod("GET");
     const post_method = net.HttpParser.parseMethod("POST");
     const invalid_method = net.HttpParser.parseMethod("INVALID");
-    
+
     std.debug.print("   • GET method: {}\n", .{get_method == .GET});
     std.debug.print("   • POST method: {}\n", .{post_method == .POST});
     std.debug.print("   • Invalid method: {}\n", .{invalid_method == null});
@@ -91,7 +91,7 @@ pub fn main() !void {
     // Test request line parsing
     const request_line = "GET /api/users HTTP/1.1";
     const parsed = net.HttpParser.parseRequestLine(request_line);
-    
+
     if (parsed) |req| {
         std.debug.print("   • Request line parsing: {} {s} {s}\n", .{ req[0], req[1], req[2] });
     } else {
@@ -104,10 +104,10 @@ pub fn main() !void {
         .body = "Hello, World!",
     };
     try response.addHeader("Content-Type", "text/plain");
-    
+
     var response_buffer: [1024]u8 = undefined;
     const formatted_response = try net.HttpParser.formatResponse(&response, &response_buffer);
-    
+
     std.debug.print("   • Response formatting: {} bytes\n", .{formatted_response.len});
     const preview_len = @min(50, formatted_response.len);
     std.debug.print("   • Response preview: {s}\n", .{formatted_response[0..preview_len]});
@@ -117,7 +117,7 @@ pub fn main() !void {
     std.debug.print("\n🎯 Server started successfully!\n", .{});
     std.debug.print("💡 In production, the server would now listen for HTTP requests\n", .{});
     std.debug.print("💡 All networking operations use static allocation for predictable performance\n", .{});
-    
+
     // Clean shutdown
     server.stop();
     std.debug.print("🛑 Server stopped\n", .{});
