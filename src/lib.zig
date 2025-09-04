@@ -14,11 +14,19 @@ pub const performance = @import("performance.zig");
 
 // Re-export main types for convenience
 pub const HttpServer = http.HttpServer;
+pub const HttpRequest = http.HttpRequest;
+pub const HttpResponse = http.HttpResponse;
+pub const HttpParser = http.HttpParser;
+pub const Method = http.Method;
+pub const StatusCode = http.StatusCode;
+pub const Header = http.Header;
+pub const RouteHandler = http.RouteHandler;
+pub const Route = http.Route;
+
 pub const TcpClient = tcp.TcpClient;
 pub const TcpServer = tcp.TcpServer;
 pub const WebSocketServer = websocket.WebSocketServer;
 pub const Connection = connection.Connection;
-pub const Route = routing.Route;
 pub const Router = routing.Router;
 pub const PerformanceMonitor = performance.PerformanceMonitor;
 

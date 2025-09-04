@@ -12,7 +12,7 @@ test "HTTP Server initialization" {
         .response_buffer_size = 16384,
     };
 
-    const server = net.http.HttpServer.init(config);
+    const server = try net.http.HttpServer.init(config);
 
     // Test configuration is correctly set
     try std.testing.expectEqual(@as(u16, 8080), server.config.port);
@@ -22,7 +22,7 @@ test "HTTP Server initialization" {
 }
 
 test "HTTP Server route management" {
-    var server = net.http.HttpServer.init(.{
+    var server = try net.http.HttpServer.init(.{
         .port = 8080,
         .max_connections = 100,
         .request_buffer_size = 8192,
@@ -30,16 +30,16 @@ test "HTTP Server route management" {
     });
 
     // Test adding multiple routes
-    try server.addRoute("GET", "/", struct {
-        fn handler() void {}
+    try server.addRoute(.GET, "/", struct {
+        fn handler(_: *net.HttpRequest, _: *net.HttpResponse) void {}
     }.handler);
 
-    try server.addRoute("POST", "/api/users", struct {
-        fn handler() void {}
+    try server.addRoute(.POST, "/api/users", struct {
+        fn handler(_: *net.HttpRequest, _: *net.HttpResponse) void {}
     }.handler);
 
-    try server.addRoute("PUT", "/api/users/:id", struct {
-        fn handler() void {}
+    try server.addRoute(.PUT, "/api/users/:id", struct {
+        fn handler(_: *net.HttpRequest, _: *net.HttpResponse) void {}
     }.handler);
 
     // All routes should be added without error
@@ -47,7 +47,7 @@ test "HTTP Server route management" {
 }
 
 test "HTTP Server start functionality" {
-    var server = net.http.HttpServer.init(.{
+    var server = try net.http.HttpServer.init(.{
         .port = 8080,
         .max_connections = 100,
         .request_buffer_size = 8192,
@@ -60,43 +60,42 @@ test "HTTP Server start functionality" {
 }
 
 test "HTTP Request structure" {
-    const headers = [_]net.http.HttpRequest.Header{
-        .{ .name = "Content-Type", .value = "application/json" },
-        .{ .name = "Authorization", .value = "Bearer token123" },
-    };
-
-    const request = net.http.HttpRequest{
-        .method = "POST",
+    var request = net.http.HttpRequest{
+        .method = .POST,
         .path = "/api/users",
-        .headers = &headers,
         .body = "{\"name\":\"John\",\"email\":\"john@example.com\"}",
     };
 
+    // Test adding headers
+    try request.addHeader("Content-Type", "application/json");
+    try request.addHeader("Authorization", "Bearer token123");
+
     // Test request structure
-    try std.testing.expectEqualStrings("POST", request.method);
+    try std.testing.expectEqual(net.http.Method.POST, request.method);
     try std.testing.expectEqualStrings("/api/users", request.path);
-    try std.testing.expectEqual(@as(usize, 2), request.headers.len);
-    try std.testing.expectEqualStrings("application/json", request.headers[0].value);
+    try std.testing.expectEqual(@as(u8, 2), request.header_count);
+    
+    const content_type = request.getHeader("Content-Type");
+    try std.testing.expect(content_type != null);
+    try std.testing.expectEqualStrings("application/json", content_type.?);
     try std.testing.expectEqualStrings("Bearer token123", request.headers[1].value);
     try std.testing.expectEqualStrings("{\"name\":\"John\",\"email\":\"john@example.com\"}", request.body);
 }
 
 test "HTTP Response structure" {
-    const headers = [_]net.http.HttpResponse.Header{
-        .{ .name = "Content-Type", .value = "application/json" },
-        .{ .name = "Cache-Control", .value = "no-cache" },
+    var response = net.http.HttpResponse{
+        .status_code = .CREATED,
+        .body = "{\"id\":123,\"status\":\"created\"}",
     };
 
-    const response = net.http.HttpResponse{
-        .status_code = 201,
-        .body = "{\"id\":123,\"status\":\"created\"}",
-        .headers = &headers,
-    };
+    // Test adding headers
+    try response.addHeader("Content-Type", "application/json");
+    try response.addHeader("Cache-Control", "no-cache");
 
     // Test response structure
-    try std.testing.expectEqual(@as(u16, 201), response.status_code);
+    try std.testing.expectEqual(net.http.StatusCode.CREATED, response.status_code);
     try std.testing.expectEqualStrings("{\"id\":123,\"status\":\"created\"}", response.body);
-    try std.testing.expectEqual(@as(usize, 2), response.headers.len);
+    try std.testing.expectEqual(@as(u8, 2), response.header_count);
     try std.testing.expectEqualStrings("application/json", response.headers[0].value);
     try std.testing.expectEqualStrings("no-cache", response.headers[1].value);
 }
@@ -109,7 +108,7 @@ test "HTTP Server with different configurations" {
     };
 
     for (configs) |config| {
-        var server = net.http.HttpServer.init(config);
+        var server = try net.http.HttpServer.init(config);
 
         // Test each configuration
         try std.testing.expectEqual(config.port, server.config.port);
@@ -118,8 +117,8 @@ test "HTTP Server with different configurations" {
         try std.testing.expectEqual(config.response_buffer_size, server.config.response_buffer_size);
 
         // Test route addition
-        try server.addRoute("GET", "/test", struct {
-            fn handler() void {}
+        try server.addRoute(.GET, "/test", struct {
+            fn handler(_: *net.HttpRequest, _: *net.HttpResponse) void {}
         }.handler);
 
         // Test server start
@@ -129,7 +128,7 @@ test "HTTP Server with different configurations" {
 
 test "HTTP Server edge cases" {
     // Test with minimal configuration
-    var minimal_server = net.http.HttpServer.init(.{
+    var minimal_server = try net.http.HttpServer.init(.{
         .port = 1,
         .max_connections = 1,
         .request_buffer_size = 1024,
@@ -140,7 +139,7 @@ test "HTTP Server edge cases" {
     try std.testing.expectEqual(@as(u32, 1), minimal_server.config.max_connections);
 
     // Test with maximum configuration
-    var max_server = net.http.HttpServer.init(.{
+    var max_server = try net.http.HttpServer.init(.{
         .port = 65535,
         .max_connections = net.config.max_connections,
         .request_buffer_size = net.config.huge_buffer_size,
