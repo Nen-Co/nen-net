@@ -81,7 +81,7 @@ fn performanceDemo() !void {
 // Example route handlers (demo mode)
 fn handleRoot(request: *net.HttpRequest, response: *net.HttpResponse) void {
     _ = request; // Suppress unused parameter warning
-    
+
     response.status_code = .OK;
     response.setBody("Hello from Nen Net! 🚀");
     response.addHeader("Content-Type", "text/plain") catch {};
@@ -89,7 +89,7 @@ fn handleRoot(request: *net.HttpRequest, response: *net.HttpResponse) void {
 
 fn handleStatus(request: *net.HttpRequest, response: *net.HttpResponse) void {
     _ = request; // Suppress unused parameter warning
-    
+
     response.status_code = .OK;
     response.setBody("{\"status\":\"running\",\"framework\":\"nen-net\"}");
     response.addHeader("Content-Type", "application/json") catch {};

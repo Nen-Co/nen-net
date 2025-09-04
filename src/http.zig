@@ -106,7 +106,7 @@ pub const HttpServer = struct {
             .request_buffer_size = config_options.request_buffer_size,
             .response_buffer_size = config_options.response_buffer_size,
         };
-        
+
         return @This(){
             .config = config_options,
             .tcp_server = tcp.TcpServer.init(tcp_config),
@@ -161,7 +161,7 @@ pub const HttpParser = struct {
         const method_str = parts.next() orelse return null;
         const path = parts.next() orelse return null;
         const version = parts.next() orelse return null;
-        
+
         const method = parseMethod(method_str) orelse return null;
         return .{ method, path, version };
     }
@@ -169,28 +169,28 @@ pub const HttpParser = struct {
     pub inline fn formatResponse(response: *const HttpResponse, buffer: []u8) ![]u8 {
         var stream = std.io.fixedBufferStream(buffer);
         var writer = stream.writer();
-        
+
         // Status line
         try writer.print("{s} {d} {s}\r\n", .{ response.version, @intFromEnum(response.status_code), statusText(response.status_code) });
-        
+
         // Headers
         for (0..response.header_count) |i| {
             try writer.print("{s}: {s}\r\n", .{ response.headers[i].name, response.headers[i].value });
         }
-        
+
         // Content-Length if body exists
         if (response.body.len > 0) {
             try writer.print("Content-Length: {d}\r\n", .{response.body.len});
         }
-        
+
         // End headers
         try writer.writeAll("\r\n");
-        
+
         // Body
         if (response.body.len > 0) {
             try writer.writeAll(response.body);
         }
-        
+
         return buffer[0..stream.pos];
     }
 
