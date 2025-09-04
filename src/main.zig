@@ -38,9 +38,9 @@ fn httpServerDemo() !void {
     std.debug.print("     • Response buffer: {d} bytes\n", .{net.response_buffer_size});
 
     // Add some example routes
-    try server.addRoute("GET", "/", handleRoot);
-    try server.addRoute("GET", "/api/status", handleStatus);
-    try server.addRoute("POST", "/api/data", handleData);
+    try server.addRoute(.GET, "/", handleRoot);
+    try server.addRoute(.GET, "/api/status", handleStatus);
+    try server.addRoute(.POST, "/api/data", handleData);
 
     std.debug.print("  ✅ Added 3 example routes\n", .{});
     std.debug.print("  🚀 Server ready to start (demo mode)\n\n", .{});
@@ -79,28 +79,24 @@ fn performanceDemo() !void {
 }
 
 // Example route handlers (demo mode)
-fn handleRoot(request: net.http.HttpRequest) !net.http.HttpResponse {
-    _ = request;
-    return net.http.HttpResponse{
-        .status_code = 200,
-        .body = "Hello from Nen Net! 🚀",
-        .headers = &.{},
-    };
+fn handleRoot(request: *net.HttpRequest, response: *net.HttpResponse) void {
+    _ = request; // Suppress unused parameter warning
+    
+    response.status_code = .OK;
+    response.setBody("Hello from Nen Net! 🚀");
+    response.addHeader("Content-Type", "text/plain") catch {};
 }
 
-fn handleStatus(request: net.http.HttpRequest) !net.http.HttpResponse {
-    _ = request;
-    return net.http.HttpResponse{
-        .status_code = 200,
-        .body = "{\"status\":\"running\",\"framework\":\"nen-net\"}",
-        .headers = &.{.{ .name = "Content-Type", .value = "application/json" }},
-    };
+fn handleStatus(request: *net.HttpRequest, response: *net.HttpResponse) void {
+    _ = request; // Suppress unused parameter warning
+    
+    response.status_code = .OK;
+    response.setBody("{\"status\":\"running\",\"framework\":\"nen-net\"}");
+    response.addHeader("Content-Type", "application/json") catch {};
 }
 
-fn handleData(request: net.http.HttpRequest) !net.http.HttpResponse {
-    return net.http.HttpResponse{
-        .status_code = 201,
-        .body = request.body,
-        .headers = &.{.{ .name = "Content-Type", .value = "text/plain" }},
-    };
+fn handleData(request: *net.HttpRequest, response: *net.HttpResponse) void {
+    response.status_code = .CREATED;
+    response.setBody(request.body);
+    response.addHeader("Content-Type", "text/plain") catch {};
 }

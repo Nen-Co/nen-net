@@ -34,12 +34,14 @@ test "TCP Client connection lifecycle" {
     try client.send("Another message");
 
     // Test receive functionality
-    const response1 = try client.receive();
-    const response2 = try client.receive();
+    var buffer1: [256]u8 = undefined;
+    var buffer2: [256]u8 = undefined;
+    const response1_len = try client.receive(&buffer1);
+    const response2_len = try client.receive(&buffer2);
 
-    // Both responses should be the demo response
-    try std.testing.expectEqualStrings("demo response", response1);
-    try std.testing.expectEqualStrings("demo response", response2);
+    // Both responses should be empty for demo mode
+    try std.testing.expectEqual(@as(usize, 0), response1_len);
+    try std.testing.expectEqual(@as(usize, 0), response2_len);
 }
 
 test "TCP Client with different configurations" {
@@ -60,8 +62,9 @@ test "TCP Client with different configurations" {
         // Test basic operations
         try client.connect();
         try client.send("test");
-        const response = try client.receive();
-        try std.testing.expectEqualStrings("demo response", response);
+        var buffer: [256]u8 = undefined;
+        const response_len = try client.receive(&buffer);
+        try std.testing.expectEqual(@as(usize, 0), response_len);
     }
 }
 
@@ -163,8 +166,9 @@ test "TCP Client data handling" {
     for (test_data) |data| {
         try client.connect();
         try client.send(data);
-        const response = try client.receive();
-        try std.testing.expectEqualStrings("demo response", response);
+        var buffer: [256]u8 = undefined;
+        const response_len = try client.receive(&buffer);
+        try std.testing.expectEqual(@as(usize, 0), response_len);
     }
 }
 
@@ -184,7 +188,8 @@ test "TCP Client buffer size validation" {
         // Test operations with this buffer size
         try client.connect();
         try client.send("test");
-        const response = try client.receive();
-        try std.testing.expectEqualStrings("demo response", response);
+        var buffer: [256]u8 = undefined;
+        const response_len = try client.receive(&buffer);
+        try std.testing.expectEqual(@as(usize, 0), response_len);
     }
 }
