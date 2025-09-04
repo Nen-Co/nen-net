@@ -151,20 +151,9 @@ pub fn build(b: *std.Build) void {
     // For now, just run the unit tests as stress tests are not yet implemented
     stress_step.dependOn(test_step);
 
-    // Examples
-    const examples = b.addExecutable(.{
-        .name = "examples",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("examples/http_server_demo.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    examples.root_module.addImport("nen-net", lib);
-
-    const run_examples = b.addRunArtifact(examples);
-    const examples_step = b.step("examples", "Run examples");
-    examples_step.dependOn(&run_examples.step);
+    // Examples (placeholder - will be implemented when core functionality is ready)
+    // const examples_step = b.step("examples", "Run examples");
+    // examples_step.dependOn(&run_examples.step);
 
     // All tests
     const all_tests = b.step("test-all", "Run all tests");
