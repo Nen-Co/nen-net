@@ -109,7 +109,7 @@ pub const HttpServer = struct {
 
         return @This(){
             .config = config_options,
-            .tcp_server = tcp.TcpServer.init(tcp_config),
+            .tcp_server = try tcp.TcpServer.init(tcp_config),
         };
     }
 

@@ -60,6 +60,16 @@ pub inline fn createTcpClient(host: []const u8, port: u16) !TcpClient {
     });
 }
 
+pub inline fn createTcpServer(port: u16) !TcpServer {
+    const server_config = config.ServerConfig{
+        .port = port,
+        .max_connections = 4096,
+        .request_buffer_size = 8192,
+        .response_buffer_size = 8192,
+    };
+    return try TcpServer.init(server_config);
+}
+
 pub inline fn createWebSocketServer(port: u16) !WebSocketServer {
     return WebSocketServer.init(.{
         .port = port,
