@@ -41,8 +41,14 @@ pub const ConnectionPool = struct {
     };
 
     pub inline fn init() @This() {
+        // Cross-platform invalid socket value
+        const invalid_socket: std.posix.socket_t = if (builtin.os.tag == .windows) 
+            @bitCast(@as(usize, @bitCast(@as(isize, -1)))) 
+        else 
+            @bitCast(@as(isize, -1));
+            
         var pool = @This(){
-            .sockets = [_]std.posix.socket_t{0} ** 4096,
+            .sockets = [_]std.posix.socket_t{invalid_socket} ** 4096,
             .states = [_]ConnectionState{.free} ** 4096,
             .last_activity = [_]u64{0} ** 4096,
             .buffer_indices = [_]u16{0} ** 4096,
@@ -187,9 +193,15 @@ pub const TcpServer = struct {
                 return err;
             };
 
-            // Set client socket to non-blocking
+            // Set client socket to non-blocking (cross-platform compatible)
             const flags = try std.posix.fcntl(client_socket, std.posix.F.GETFL, 0);
-            _ = try std.posix.fcntl(client_socket, std.posix.F.SETFL, flags | if (builtin.os.tag == .linux) std.posix.O.NONBLOCK else 0x4); // O_NONBLOCK on macOS
+            const nonblock_flag = switch (builtin.os.tag) {
+                .linux => @as(u32, 0x800), // O_NONBLOCK for Linux
+                .macos => @as(u32, 0x4),   // O_NONBLOCK for macOS  
+                .windows => @as(u32, 0x4), // Fallback
+                else => @as(u32, 0x4),     // Default fallback
+            };
+            _ = try std.posix.fcntl(client_socket, std.posix.F.SETFL, flags | nonblock_flag);
 
             // Acquire connection slot
             const slot = self.connection_pool.acquire() orelse {
@@ -231,8 +243,8 @@ pub const TcpServer = struct {
             return;
         }
 
-        // Update activity timestamp
-        self.connection_pool.last_activity[slot] = std.time.nanoTimestamp();
+        // Update activity timestamp (cast i128 to u64 for cross-platform compatibility)
+        self.connection_pool.last_activity[slot] = @intCast(std.time.nanoTimestamp());
 
         // Process the data (this would call your NenDB protocol handler)
         try self.processMessage(slot, self.connection_pool.read_buffers[slot][0..bytes_read]);
