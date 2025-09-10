@@ -41,11 +41,11 @@ pub const ConnectionPool = struct {
     };
 
     pub inline fn init() @This() {
-        // Cross-platform invalid socket value
+        // Cross-platform invalid socket value (-1 for all platforms, but different sizes)
         const invalid_socket: std.posix.socket_t = if (builtin.os.tag == .windows) 
-            @bitCast(@as(usize, @bitCast(@as(isize, -1)))) 
+            @ptrFromInt(@as(usize, @bitCast(@as(isize, -1))))
         else 
-            @bitCast(@as(isize, -1));
+            @intCast(-1); // Unix systems use -1 as invalid socket
             
         var pool = @This(){
             .sockets = [_]std.posix.socket_t{invalid_socket} ** 4096,
