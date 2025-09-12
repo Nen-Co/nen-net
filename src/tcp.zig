@@ -42,11 +42,11 @@ pub const ConnectionPool = struct {
 
     pub inline fn init() @This() {
         // Cross-platform invalid socket value (-1 for all platforms, but different sizes)
-        const invalid_socket: std.posix.socket_t = if (builtin.os.tag == .windows) 
+        const invalid_socket: std.posix.socket_t = if (builtin.os.tag == .windows)
             @ptrFromInt(@as(usize, @bitCast(@as(isize, -1))))
-        else 
+        else
             @intCast(-1); // Unix systems use -1 as invalid socket
-            
+
         var pool = @This(){
             .sockets = [_]std.posix.socket_t{invalid_socket} ** 4096,
             .states = [_]ConnectionState{.free} ** 4096,
@@ -197,9 +197,9 @@ pub const TcpServer = struct {
             const flags = try std.posix.fcntl(client_socket, std.posix.F.GETFL, 0);
             const nonblock_flag = switch (builtin.os.tag) {
                 .linux => @as(u32, 0x800), // O_NONBLOCK for Linux
-                .macos => @as(u32, 0x4),   // O_NONBLOCK for macOS  
+                .macos => @as(u32, 0x4), // O_NONBLOCK for macOS
                 .windows => @as(u32, 0x4), // Fallback
-                else => @as(u32, 0x4),     // Default fallback
+                else => @as(u32, 0x4), // Default fallback
             };
             _ = try std.posix.fcntl(client_socket, std.posix.F.SETFL, flags | nonblock_flag);
 

@@ -1,7 +1,12 @@
-// Nen Net Library - Main Entry Point
+// Nen Net Library - Main Entry Point with Data-Oriented Design
 // High-performance, statically allocated HTTP and TCP framework
 
 const std = @import("std");
+
+// DOD modules
+pub const dod_config = @import("dod_config.zig");
+pub const dod_layout = @import("dod_layout.zig");
+pub const simd_network = @import("simd_network.zig");
 
 // Core modules
 pub const config = @import("config.zig");
@@ -11,6 +16,18 @@ pub const websocket = @import("websocket.zig");
 pub const connection = @import("connection.zig");
 pub const routing = @import("routing.zig");
 pub const performance = @import("performance.zig");
+
+// Re-export DOD types
+pub const DODNetworkLayout = dod_layout.DODNetworkLayout;
+pub const SIMDNetworkProcessor = simd_network.SIMDNetworkProcessor;
+pub const DODHttpParser = simd_network.DODHttpParser;
+
+// Re-export DOD configuration
+pub const ConnectionState = dod_config.ConnectionState;
+pub const HttpMethod = dod_config.HttpMethod;
+pub const HttpStatus = dod_config.HttpStatus;
+pub const ProtocolType = dod_config.ProtocolType;
+pub const DOD_CONSTANTS = dod_config.DOD_CONSTANTS;
 
 // Re-export main types for convenience
 pub const HttpServer = http.HttpServer;
@@ -48,8 +65,25 @@ pub inline fn createHttpServer(port: u16) !HttpServer {
         .port = port,
         .max_connections = config.max_connections,
         .request_buffer_size = config.request_buffer_size,
-        .response_buffer_size = config.response_buffer_size,
     });
+}
+
+// DOD convenience functions
+pub inline fn get_global_layout() *DODNetworkLayout {
+    return dod_layout.get_global_layout();
+}
+
+pub inline fn get_global_processor() *SIMDNetworkProcessor {
+    return simd_network.get_global_processor();
+}
+
+pub inline fn process_mixed_batches(
+    connection_count: u32,
+    request_count: u32,
+    response_count: u32
+) void {
+    const layout = get_global_layout();
+    simd_network.process_mixed_network_batches(layout, connection_count, request_count, response_count);
 }
 
 pub inline fn createTcpClient(host: []const u8, port: u16) !TcpClient {
