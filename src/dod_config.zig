@@ -6,48 +6,48 @@ const std = @import("std");
 /// DOD constants for network operations
 pub const DOD_CONSTANTS = struct {
     // Connection management
-    pub const MAX_CONNECTIONS: u32 = 8192;         // Max concurrent connections
-    pub const MAX_HTTP_REQUESTS: u32 = 16384;      // Max concurrent HTTP requests
-    pub const MAX_TCP_SOCKETS: u32 = 4096;         // Max TCP sockets
+    pub const MAX_CONNECTIONS: u32 = 8192; // Max concurrent connections
+    pub const MAX_HTTP_REQUESTS: u32 = 16384; // Max concurrent HTTP requests
+    pub const MAX_TCP_SOCKETS: u32 = 4096; // Max TCP sockets
     pub const MAX_WEBSOCKET_CONNECTIONS: u32 = 2048; // Max WebSocket connections
-    
+
     // Buffer sizes and management
-    pub const REQUEST_BUFFER_SIZE: usize = 64 * 1024;  // 64KB per request
+    pub const REQUEST_BUFFER_SIZE: usize = 64 * 1024; // 64KB per request
     pub const RESPONSE_BUFFER_SIZE: usize = 128 * 1024; // 128KB per response
-    pub const HEADER_BUFFER_SIZE: usize = 8 * 1024;    // 8KB for headers
-    pub const BODY_BUFFER_SIZE: usize = 1024 * 1024;   // 1MB for body data
-    
+    pub const HEADER_BUFFER_SIZE: usize = 8 * 1024; // 8KB for headers
+    pub const BODY_BUFFER_SIZE: usize = 1024 * 1024; // 1MB for body data
+
     // Network buffer pools
     pub const NETWORK_BUFFER_POOL_SIZE: usize = 64 * 1024 * 1024; // 64MB total
-    pub const SOCKET_BUFFER_SIZE: usize = 32 * 1024;   // 32KB per socket
-    pub const PACKET_BUFFER_SIZE: usize = 16 * 1024;   // 16KB per packet
-    
+    pub const SOCKET_BUFFER_SIZE: usize = 32 * 1024; // 32KB per socket
+    pub const PACKET_BUFFER_SIZE: usize = 16 * 1024; // 16KB per packet
+
     // Memory alignment
-    pub const CACHE_LINE_SIZE: u32 = 64;           // CPU cache line size
-    pub const SIMD_ALIGNMENT: u32 = 32;            // SIMD vector alignment
-    pub const PAGE_SIZE: u32 = 4096;               // Memory page size
-    
+    pub const CACHE_LINE_SIZE: u32 = 64; // CPU cache line size
+    pub const SIMD_ALIGNMENT: u32 = 32; // SIMD vector alignment
+    pub const PAGE_SIZE: u32 = 4096; // Memory page size
+
     // Processing batches
-    pub const CONNECTION_BATCH_SIZE: u32 = 64;     // Connections per SIMD batch
-    pub const REQUEST_BATCH_SIZE: u32 = 32;        // Requests per SIMD batch
-    pub const HEADER_BATCH_SIZE: u32 = 16;         // Headers per SIMD batch
-    pub const PACKET_BATCH_SIZE: u32 = 128;        // Packets per SIMD batch
-    
+    pub const CONNECTION_BATCH_SIZE: u32 = 64; // Connections per SIMD batch
+    pub const REQUEST_BATCH_SIZE: u32 = 32; // Requests per SIMD batch
+    pub const HEADER_BATCH_SIZE: u32 = 16; // Headers per SIMD batch
+    pub const PACKET_BATCH_SIZE: u32 = 128; // Packets per SIMD batch
+
     // HTTP specific
-    pub const MAX_HEADERS_PER_REQUEST: u32 = 64;   // Max headers per HTTP request
-    pub const MAX_URL_LENGTH: u32 = 2048;          // Max URL length
-    pub const MAX_HEADER_NAME_LENGTH: u32 = 128;   // Max header name length
+    pub const MAX_HEADERS_PER_REQUEST: u32 = 64; // Max headers per HTTP request
+    pub const MAX_URL_LENGTH: u32 = 2048; // Max URL length
+    pub const MAX_HEADER_NAME_LENGTH: u32 = 128; // Max header name length
     pub const MAX_HEADER_VALUE_LENGTH: u32 = 4096; // Max header value length
-    
+
     // Protocol limits
-    pub const MAX_HTTP_VERSION_LENGTH: u32 = 16;   // "HTTP/1.1" etc.
-    pub const MAX_METHOD_LENGTH: u32 = 16;         // "GET", "POST", etc.
+    pub const MAX_HTTP_VERSION_LENGTH: u32 = 16; // "HTTP/1.1" etc.
+    pub const MAX_METHOD_LENGTH: u32 = 16; // "GET", "POST", etc.
     pub const MAX_STATUS_MESSAGE_LENGTH: u32 = 128; // Status message
-    
+
     // Connection state
-    pub const CONNECTION_TIMEOUT_MS: u32 = 30000;  // 30 second timeout
-    pub const KEEP_ALIVE_TIMEOUT_MS: u32 = 5000;   // 5 second keep-alive
-    pub const MAX_PIPELINE_DEPTH: u32 = 8;         // HTTP pipelining depth
+    pub const CONNECTION_TIMEOUT_MS: u32 = 30000; // 30 second timeout
+    pub const KEEP_ALIVE_TIMEOUT_MS: u32 = 5000; // 5 second keep-alive
+    pub const MAX_PIPELINE_DEPTH: u32 = 8; // HTTP pipelining depth
 };
 
 /// Network connection states for DOD organization
@@ -175,20 +175,20 @@ pub const PerformanceConfig = struct {
 pub const MemoryConfig = struct {
     // Connection pool
     pub const connection_pool_size = DOD_CONSTANTS.MAX_CONNECTIONS * @sizeOf(ConnectionData);
-    
+
     // Request pool
     pub const request_pool_size = DOD_CONSTANTS.MAX_HTTP_REQUESTS * @sizeOf(HttpRequestData);
-    
+
     // Response pool
     pub const response_pool_size = DOD_CONSTANTS.MAX_HTTP_REQUESTS * @sizeOf(HttpResponseData);
-    
+
     // Header pool
     pub const header_pool_size = DOD_CONSTANTS.MAX_HTTP_REQUESTS * DOD_CONSTANTS.MAX_HEADERS_PER_REQUEST * @sizeOf(HttpHeaderData);
-    
+
     // Buffer pools
     pub const total_buffer_size = DOD_CONSTANTS.NETWORK_BUFFER_POOL_SIZE;
-    
+
     // Total memory requirement
-    pub const total_memory_size = connection_pool_size + request_pool_size + response_pool_size + 
-                                  header_pool_size + total_buffer_size;
+    pub const total_memory_size = connection_pool_size + request_pool_size + response_pool_size +
+        header_pool_size + total_buffer_size;
 };

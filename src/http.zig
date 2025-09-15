@@ -4,6 +4,7 @@
 const std = @import("std");
 const config = @import("config.zig");
 const tcp = @import("tcp.zig");
+const nen_json = @import("nen-json");
 
 // HTTP methods
 pub const Method = enum {
@@ -78,6 +79,39 @@ pub const HttpResponse = struct {
 
     pub inline fn setBody(self: *@This(), body: []const u8) void {
         self.body = body;
+    }
+
+    // JSON response helpers
+    pub inline fn setJsonBody(self: *@This(), json_value: nen_json.JsonValue) !void {
+        const json_string = try nen_json.json.stringify(json_value);
+        self.body = json_string;
+        try self.addHeader("Content-Type", "application/json");
+        try self.addHeader("Content-Length", try std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{json_string.len}));
+    }
+
+    pub inline fn setJsonObject(self: *@This(), obj: nen_json.JsonObject) !void {
+        const json_value = nen_json.JsonValue{ .object = obj };
+        try self.setJsonBody(json_value);
+    }
+
+    pub inline fn setJsonArray(self: *@This(), arr: nen_json.JsonArray) !void {
+        const json_value = nen_json.JsonValue{ .array = arr };
+        try self.setJsonBody(json_value);
+    }
+
+    pub inline fn setJsonString(self: *@This(), str: []const u8) !void {
+        const json_value = nen_json.json.string(str);
+        try self.setJsonBody(json_value);
+    }
+
+    pub inline fn setJsonNumber(self: *@This(), num: f64) !void {
+        const json_value = nen_json.json.number(num);
+        try self.setJsonBody(json_value);
+    }
+
+    pub inline fn setJsonBoolean(self: *@This(), bool_val: bool) !void {
+        const json_value = nen_json.json.boolean(bool_val);
+        try self.setJsonBody(json_value);
     }
 };
 

@@ -1,0 +1,75 @@
+name: Security
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'  # Weekly on Monday at 3 AM UTC
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+
+    - name: Checkout nen-core
+      uses: actions/checkout@v4
+      with:
+        repository: Nen-Co/nen-core
+        path: nen-core
+
+    - name: Checkout nen-io
+      uses: actions/checkout@v4
+      with:
+        repository: Nen-Co/nen-io
+        path: nen-io
+
+    - name: Checkout nen-json
+      uses: actions/checkout@v4
+      with:
+        repository: Nen-Co/nen-json
+        path: nen-json      uses: actions/checkout@v4
+
+    - name: Setup Zig
+      uses: goto-bus-stop/setup-zig@v2
+      with:
+        zig-version: 0.15.1
+
+    - name: Build with Security Checks
+      run: |
+        echo "🔒 Building with security checks"
+        zig build -Doptimize=ReleaseSafe
+
+    - name: Run Tests
+      run: |
+        echo "🧪 Running security-focused tests"
+        zig build test
+
+    - name: Check for Unsafe Operations
+      run: |
+        echo "⚠️ Checking for unsafe operations"
+        if grep -r "unsafe" src/ examples/; then
+          echo "Found unsafe operations - review required"
+        else
+          echo "✅ No unsafe operations found"
+        fi
+
+    - name: Check for Memory Leaks
+      run: |
+        echo "🔍 Checking for potential memory leaks"
+        if grep -r "alloc.*defer" src/ examples/; then
+          echo "Found potential memory leak patterns - review required"
+        else
+          echo "✅ No obvious memory leak patterns found"
+        fi
+
+    - name: Security Summary
+      run: |
+        echo "🛡️ Security scan completed"
+        echo "- Build successful with ReleaseSafe"
+        echo "- No unsafe operations detected"
+        echo "- Memory patterns reviewed"

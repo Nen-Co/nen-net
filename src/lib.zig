@@ -1,7 +1,18 @@
 // Nen Net Library - Main Entry Point with Data-Oriented Design
 // High-performance, statically allocated HTTP and TCP framework
+// Now integrated with nen-core for unified DOD patterns
+//
+// I/O Strategy:
+// - Network I/O: Uses std.net and std.posix for platform-specific socket operations
+//   (TCP sockets require low-level system calls that can't be abstracted)
+// - HTTP formatting: Uses std.io.fixedBufferStream for simple buffer operations
+// - File I/O: Use nen-io for file operations and validation
+// - Future: Consider replacing std.io.fixedBufferStream with nen-io equivalent
 
 const std = @import("std");
+const nen_core = @import("nen-core");
+const nen_io = @import("nen-io");
+const nen_json = @import("nen-json");
 
 // DOD modules
 pub const dod_config = @import("dod_config.zig");
@@ -16,6 +27,7 @@ pub const websocket = @import("websocket.zig");
 pub const connection = @import("connection.zig");
 pub const routing = @import("routing.zig");
 pub const performance = @import("performance.zig");
+pub const tls = @import("tls.zig");
 
 // Re-export DOD types
 pub const DODNetworkLayout = dod_layout.DODNetworkLayout;
@@ -28,6 +40,32 @@ pub const HttpMethod = dod_config.HttpMethod;
 pub const HttpStatus = dod_config.HttpStatus;
 pub const ProtocolType = dod_config.ProtocolType;
 pub const DOD_CONSTANTS = dod_config.DOD_CONSTANTS;
+
+// Re-export nen-core types for unified ecosystem
+pub const NenError = nen_core.NenError;
+pub const MessageType = nen_core.MessageType;
+pub const BatchResult = nen_core.BatchResult;
+pub const ClientBatcher = nen_core.ClientBatcher;
+pub const DODConstants = nen_core.DODConstants;
+
+// Re-export nen-io types for unified ecosystem
+pub const Terminal = nen_io.Terminal;
+pub const ValidationResult = nen_io.ValidationResult;
+pub const ValidationError = nen_io.ValidationError;
+pub const JsonValidator = nen_io.JsonValidator;
+pub const FileBatch = nen_io.FileBatch;
+pub const NetworkBatch = nen_io.NetworkBatch;
+pub const MemoryBatch = nen_io.MemoryBatch;
+pub const StreamBatch = nen_io.StreamBatch;
+
+// Re-export nen-json types for unified ecosystem
+pub const JsonValue = nen_json.JsonValue;
+pub const JsonObject = nen_json.JsonObject;
+pub const JsonArray = nen_json.JsonArray;
+pub const JsonParser = nen_json.JsonParser;
+pub const JsonSerializer = nen_json.JsonSerializer;
+pub const JsonBuilder = nen_json.JsonBuilder;
+pub const json = nen_json.json;
 
 // Re-export main types for convenience
 pub const HttpServer = http.HttpServer;
@@ -46,6 +84,8 @@ pub const WebSocketServer = websocket.WebSocketServer;
 pub const Connection = connection.Connection;
 pub const Router = routing.Router;
 pub const PerformanceMonitor = performance.PerformanceMonitor;
+pub const TlsConfig = tls.TlsConfig;
+pub const TlsContext = tls.TlsContext;
 
 // Configuration constants
 pub const default_port = config.default_port;
@@ -77,11 +117,7 @@ pub inline fn get_global_processor() *SIMDNetworkProcessor {
     return simd_network.get_global_processor();
 }
 
-pub inline fn process_mixed_batches(
-    connection_count: u32,
-    request_count: u32,
-    response_count: u32
-) void {
+pub inline fn process_mixed_batches(connection_count: u32, request_count: u32, response_count: u32) void {
     const layout = get_global_layout();
     simd_network.process_mixed_network_batches(layout, connection_count, request_count, response_count);
 }

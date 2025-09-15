@@ -1,25 +1,26 @@
 // Nen Net - High-Performance TCP Module
 // DOD-based TCP server with Zig speed optimizations and static allocation
+// Now uses nen-io for low-level network operations
 
 const std = @import("std");
 const config = @import("config.zig");
+const nen_io = @import("nen-io");
 const builtin = @import("builtin");
 
-// Platform-specific socket imports
-const os = std.os;
-const net = std.net;
-const posix = std.posix;
+// Use nen-io for network operations
+const NetworkSocket = nen_io.NetworkSocket;
+const parseAddress = nen_io.network.parseAddress;
 
 // DOD Connection Pool - Struct of Arrays layout for cache efficiency
 pub const ConnectionPool = struct {
     // Hot data (frequently accessed) - packed together for cache efficiency
-    sockets: [4096]std.posix.socket_t,
+    sockets: [4096]NetworkSocket,
     states: [4096]ConnectionState,
     last_activity: [4096]u64,
     buffer_indices: [4096]u16,
 
     // Cold data (less frequently accessed)
-    client_addrs: [4096]net.Address,
+    client_addrs: [4096]std.net.Address,
     connection_ids: [4096]u32,
 
     // Pool management
@@ -41,18 +42,12 @@ pub const ConnectionPool = struct {
     };
 
     pub inline fn init() @This() {
-        // Cross-platform invalid socket value (-1 for all platforms, but different sizes)
-        const invalid_socket: std.posix.socket_t = if (builtin.os.tag == .windows)
-            @ptrFromInt(@as(usize, @bitCast(@as(isize, -1))))
-        else
-            @intCast(-1); // Unix systems use -1 as invalid socket
-
         var pool = @This(){
-            .sockets = [_]std.posix.socket_t{invalid_socket} ** 4096,
+            .sockets = undefined,
             .states = [_]ConnectionState{.free} ** 4096,
             .last_activity = [_]u64{0} ** 4096,
             .buffer_indices = [_]u16{0} ** 4096,
-            .client_addrs = [_]net.Address{undefined} ** 4096,
+            .client_addrs = [_]std.net.Address{undefined} ** 4096,
             .connection_ids = [_]u32{0} ** 4096,
             .active_count = 0,
             .free_list = undefined,
@@ -101,7 +96,7 @@ pub const ConnectionPool = struct {
 // High-performance TCP server with DOD and epoll/kqueue
 pub const TcpServer = struct {
     config: config.ServerConfig,
-    listen_socket: std.posix.socket_t,
+    listen_socket: NetworkSocket,
     connection_pool: ConnectionPool,
     is_running: bool,
 
@@ -110,12 +105,17 @@ pub const TcpServer = struct {
     events: if (builtin.os.tag == .linux) [1024]std.os.linux.epoll_event else [1024]u8,
 
     pub inline fn init(config_options: config.ServerConfig) !@This() {
-        // Create listen socket with optimizations
-        const listen_socket = try std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, 0);
-        errdefer std.posix.close(listen_socket);
+        // Create listen socket using nen-io
+        var listen_socket = try NetworkSocket.createTcp();
+        errdefer listen_socket.close();
 
-        // Socket optimizations
-        try std.posix.setsockopt(listen_socket, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, &std.mem.toBytes(@as(c_int, 1)));
+        // Configure socket
+        try listen_socket.configure(.{
+            .reuse_addr = true,
+            .tcp_nodelay = true,
+            .non_blocking = true,
+            .keep_alive = true,
+        });
 
         // Create event system (epoll on Linux, kqueue on macOS, nothing else supported)
         const event_fd = if (builtin.os.tag == .linux)
@@ -135,17 +135,17 @@ pub const TcpServer = struct {
     }
 
     pub inline fn bind(self: *@This()) !void {
-        const addr = try net.Address.parseIp4("0.0.0.0", self.config.port);
-        try std.posix.bind(self.listen_socket, &addr.any, addr.getOsSockLen());
-        try std.posix.listen(self.listen_socket, 128); // High backlog for performance
+        const addr = try parseAddress("0.0.0.0", self.config.port);
+        try self.listen_socket.bind(addr);
+        try self.listen_socket.listen(128); // High backlog for performance
 
         // Add listen socket to event system
         if (builtin.os.tag == .linux) {
             var event = std.os.linux.epoll_event{
                 .events = std.os.linux.EPOLL.IN | std.os.linux.EPOLL.ET,
-                .data = .{ .fd = self.listen_socket },
+                .data = .{ .fd = self.listen_socket.getFd() },
             };
-            try std.posix.epoll_ctl(self.event_fd, std.os.linux.EPOLL.CTL_ADD, self.listen_socket, &event);
+            try std.posix.epoll_ctl(self.event_fd, std.os.linux.EPOLL.CTL_ADD, self.listen_socket.getFd(), &event);
         }
     }
 
@@ -185,27 +185,17 @@ pub const TcpServer = struct {
     inline fn acceptConnections(self: *@This()) !void {
         // Accept multiple connections in a tight loop (edge-triggered)
         while (true) {
-            var client_addr: net.Address = undefined;
-            var addr_len: std.posix.socklen_t = @sizeOf(net.Address);
-
-            const client_socket = std.posix.accept(self.listen_socket, &client_addr.any, &addr_len, std.posix.SOCK.CLOEXEC) catch |err| {
+            const result = self.listen_socket.accept() catch |err| {
                 if (err == error.WouldBlock) break; // No more connections
                 return err;
             };
 
-            // Set client socket to non-blocking (cross-platform compatible)
-            const flags = try std.posix.fcntl(client_socket, std.posix.F.GETFL, 0);
-            const nonblock_flag = switch (builtin.os.tag) {
-                .linux => @as(u32, 0x800), // O_NONBLOCK for Linux
-                .macos => @as(u32, 0x4), // O_NONBLOCK for macOS
-                .windows => @as(u32, 0x4), // Fallback
-                else => @as(u32, 0x4), // Default fallback
-            };
-            _ = try std.posix.fcntl(client_socket, std.posix.F.SETFL, flags | nonblock_flag);
+            const client_socket = result.socket;
+            const client_addr = result.address;
 
             // Acquire connection slot
             const slot = self.connection_pool.acquire() orelse {
-                std.posix.close(client_socket);
+                client_socket.close();
                 continue; // Pool exhausted
             };
 
@@ -217,22 +207,22 @@ pub const TcpServer = struct {
             if (builtin.os.tag == .linux) {
                 var event = std.os.linux.epoll_event{
                     .events = std.os.linux.EPOLL.IN | std.os.linux.EPOLL.ET,
-                    .data = .{ .fd = client_socket },
+                    .data = .{ .fd = client_socket.getFd() },
                 };
-                try std.posix.epoll_ctl(self.event_fd, std.os.linux.EPOLL.CTL_ADD, client_socket, &event);
+                try std.posix.epoll_ctl(self.event_fd, std.os.linux.EPOLL.CTL_ADD, client_socket.getFd(), &event);
             }
         }
     }
 
-    inline fn handleClientEvent(self: *@This(), socket: std.posix.socket_t) !void {
+    inline fn handleClientEvent(self: *@This(), socket_fd: std.posix.socket_t) !void {
         // Find connection slot (could be optimized with a hash map for many connections)
         var slot: u16 = 0;
         while (slot < 4096) : (slot += 1) {
             if (self.connection_pool.states[slot] == .connected and
-                self.connection_pool.sockets[slot] == socket) break;
+                self.connection_pool.sockets[slot].getFd() == socket_fd) break;
         } else return; // Connection not found
 
-        const bytes_read = std.posix.read(socket, &self.connection_pool.read_buffers[slot]) catch |err| {
+        const bytes_read = self.connection_pool.sockets[slot].receive(&self.connection_pool.read_buffers[slot]) catch |err| {
             if (err == error.WouldBlock) return;
             self.closeConnection(slot);
             return;
@@ -254,14 +244,14 @@ pub const TcpServer = struct {
     inline fn processMessage(self: *@This(), slot: u16, data: []const u8) !void {
         // This is where NenDB protocol messages would be decoded and processed
         // For now, echo back the data as a simple test
-        const socket = self.connection_pool.sockets[slot];
-        _ = try std.posix.write(socket, "ECHO: ");
-        _ = try std.posix.write(socket, data);
+        const socket = &self.connection_pool.sockets[slot];
+        _ = try socket.send("ECHO: ");
+        _ = try socket.send(data);
     }
 
     inline fn closeConnection(self: *@This(), slot: u16) void {
-        const socket = self.connection_pool.sockets[slot];
-        std.posix.close(socket);
+        const socket = &self.connection_pool.sockets[slot];
+        socket.close();
         self.connection_pool.release(slot);
     }
 
@@ -287,7 +277,7 @@ pub const TcpServer = struct {
 // TCP client with connection pooling and reuse
 pub const TcpClient = struct {
     config: config.ClientConfig,
-    socket: ?std.posix.socket_t = null,
+    socket: ?NetworkSocket = null,
     is_connected: bool = false,
 
     pub inline fn init(config_options: config.ClientConfig) @This() {
@@ -297,29 +287,34 @@ pub const TcpClient = struct {
     }
 
     pub inline fn connect(self: *@This(), address: []const u8, port: u16) !void {
-        const addr = try net.Address.parseIp4(address, port);
-        self.socket = try std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, 0);
-        try std.posix.connect(self.socket.?, &addr.any, addr.getOsSockLen());
+        const addr = try parseAddress(address, port);
+        self.socket = try NetworkSocket.createTcp();
 
-        // Enable TCP optimizations
-        try std.posix.setsockopt(self.socket.?, std.posix.IPPROTO.TCP, std.posix.TCP.NODELAY, &std.mem.toBytes(@as(c_int, 1)));
+        // Configure socket
+        try self.socket.?.configure(.{
+            .reuse_addr = true,
+            .tcp_nodelay = true,
+            .non_blocking = true,
+            .keep_alive = true,
+        });
 
+        try self.socket.?.connect(addr);
         self.is_connected = true;
     }
 
     pub inline fn send(self: *@This(), data: []const u8) !usize {
-        if (!self.is_connected) return error.NotConnected;
-        return try std.posix.write(self.socket.?, data);
+        if (!self.is_connected or self.socket == null) return error.NotConnected;
+        return try self.socket.?.send(data);
     }
 
     pub inline fn receive(self: *@This(), buffer: []u8) !usize {
-        if (!self.is_connected) return error.NotConnected;
-        return try std.posix.read(self.socket.?, buffer);
+        if (!self.is_connected or self.socket == null) return error.NotConnected;
+        return try self.socket.?.receive(buffer);
     }
 
     pub inline fn close(self: *@This()) void {
-        if (self.socket) |socket| {
-            std.posix.close(socket);
+        if (self.socket) |*socket| {
+            socket.close();
         }
         self.socket = null;
         self.is_connected = false;
