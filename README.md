@@ -1,9 +1,11 @@
 # Nen Net
 
-A high-performance, statically allocated HTTP and TCP framework for Zig that provides zero-allocation networking with predictable performance.
+A high-performance, statically allocated HTTP and TCP framework for Zig that provides zero-allocation networking with predictable performance. Built on top of the Nen ecosystem with clean separation of concerns.
 
 > **✅ HTTP Server Implemented** - Real HTTP server with static allocation, route handling, and request/response parsing
 > **✅ TCP Framework Working** - Complete TCP client/server functionality with proper error handling
+> **✅ JSON Integration** - Built-in JSON response helpers using nen-json
+> **✅ I/O Ecosystem** - Uses nen-io for low-level network operations
 > **✅ Zig 0.15.1 Compatible** - Fully tested and compatible with the latest Zig release
 > **✅ CI/CD Complete** - Comprehensive pipelines for testing, performance, security, and releases
 
@@ -12,6 +14,8 @@ A high-performance, statically allocated HTTP and TCP framework for Zig that pro
 ### ✅ Implemented
 - **HTTP Server**: High-performance HTTP/1.1 server with static allocation
 - **TCP Framework**: Complete TCP client/server functionality with proper error handling
+- **JSON Integration**: Built-in JSON response helpers using nen-json
+- **I/O Abstraction**: Uses nen-io for low-level network operations
 - **Route Handling**: Static route management with up to 64 routes
 - **HTTP Parser**: Request/response parsing with static buffers
 - **Request/Response**: HTTP request and response structures with static headers
@@ -39,6 +43,21 @@ The framework is designed around several core principles:
 3. **Connection Pooling**: Pre-allocated connection objects
 4. **Zero Copy**: Minimize memory copying where possible
 5. **Batching**: Group operations for efficiency
+6. **Ecosystem Integration**: Built on top of the Nen ecosystem
+
+## 🔗 Nen Ecosystem Integration
+
+`nen-net` is part of the larger Nen ecosystem, providing clean separation of concerns:
+
+- **`nen-io`**: Low-level I/O operations (sockets, files, terminal)
+- **`nen-net`**: Network protocols (HTTP, TCP, WebSocket) ← *You are here*
+- **`nen-json`**: JSON processing and validation
+- **`nen-core`**: Data-oriented design patterns and batching
+
+### Dependencies
+- **`nen-core`**: For DOD patterns and batching operations
+- **`nen-io`**: For low-level network socket operations
+- **`nen-json`**: For JSON response handling and validation
 
 ## 📦 Installation
 
@@ -158,6 +177,42 @@ server.start() catch |err| {
     // Handle server start errors
     std.debug.print("Server start failed: {}\n", .{err});
 };
+```
+
+### JSON Response Helpers
+
+```zig
+const net = @import("nen-net");
+
+// Create HTTP server
+var server = net.HttpServer.init(.{
+    .port = 8080,
+    .max_connections = 1000,
+});
+
+// Add JSON API route
+try server.addRoute(.GET, "/api/status", handleStatus);
+
+// Route handler with JSON response
+fn handleStatus(request: *net.HttpRequest, response: *net.HttpResponse) void {
+    // Set JSON response
+    response.setJsonObject(net.json.object()
+        .set("status", net.json.string("ok"))
+        .set("timestamp", net.json.number(@floatFromInt(std.time.timestamp())))
+        .set("version", net.json.string("1.0.0"))
+    ) catch return;
+}
+
+// Alternative: Direct JSON value
+fn handleData(request: *net.HttpRequest, response: *net.HttpResponse) void {
+    const data = net.json.object()
+        .set("users", net.json.array()
+            .append(net.json.string("alice"))
+            .append(net.json.string("bob"))
+        );
+    
+    response.setJsonBody(net.json.JsonValue{ .object = data }) catch return;
+}
 ```
 
 ### WebSocket Server (Planned)

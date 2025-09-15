@@ -1,9 +1,18 @@
 // Nen Net Library - Main Entry Point with Data-Oriented Design
 // High-performance, statically allocated HTTP and TCP framework
 // Now integrated with nen-core for unified DOD patterns
+//
+// I/O Strategy:
+// - Network I/O: Uses std.net and std.posix for platform-specific socket operations
+//   (TCP sockets require low-level system calls that can't be abstracted)
+// - HTTP formatting: Uses std.io.fixedBufferStream for simple buffer operations
+// - File I/O: Use nen-io for file operations and validation
+// - Future: Consider replacing std.io.fixedBufferStream with nen-io equivalent
 
 const std = @import("std");
 const nen_core = @import("nen-core");
+const nen_io = @import("nen-io");
+const nen_json = @import("nen-json");
 
 // DOD modules
 pub const dod_config = @import("dod_config.zig");
@@ -38,6 +47,25 @@ pub const MessageType = nen_core.MessageType;
 pub const BatchResult = nen_core.BatchResult;
 pub const ClientBatcher = nen_core.ClientBatcher;
 pub const DODConstants = nen_core.DODConstants;
+
+// Re-export nen-io types for unified ecosystem
+pub const Terminal = nen_io.Terminal;
+pub const ValidationResult = nen_io.ValidationResult;
+pub const ValidationError = nen_io.ValidationError;
+pub const JsonValidator = nen_io.JsonValidator;
+pub const FileBatch = nen_io.FileBatch;
+pub const NetworkBatch = nen_io.NetworkBatch;
+pub const MemoryBatch = nen_io.MemoryBatch;
+pub const StreamBatch = nen_io.StreamBatch;
+
+// Re-export nen-json types for unified ecosystem
+pub const JsonValue = nen_json.JsonValue;
+pub const JsonObject = nen_json.JsonObject;
+pub const JsonArray = nen_json.JsonArray;
+pub const JsonParser = nen_json.JsonParser;
+pub const JsonSerializer = nen_json.JsonSerializer;
+pub const JsonBuilder = nen_json.JsonBuilder;
+pub const json = nen_json.json;
 
 // Re-export main types for convenience
 pub const HttpServer = http.HttpServer;
