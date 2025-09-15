@@ -2,6 +2,7 @@
 // This will be implemented with connection pooling and management
 
 const std = @import("std");
+const nen_core = @import("nen-core");
 
 // Connection with static allocation
 pub const Connection = struct {
@@ -23,3 +24,10 @@ pub const Connection = struct {
         self.is_active = false;
     }
 };
+
+// Scaffold: connection batching hook (no-op for now)
+pub inline fn process_connection_batches(batch_count: u32) !void {
+    _ = batch_count;
+    _ = nen_core; // keep import used
+    return; // no-op placeholder for future batching integration
+}
