@@ -1,7 +1,9 @@
 // Nen Net Library - Main Entry Point with Data-Oriented Design
 // High-performance, statically allocated HTTP and TCP framework
+// Now integrated with nen-core for unified DOD patterns
 
 const std = @import("std");
+const nen_core = @import("nen-core");
 
 // DOD modules
 pub const dod_config = @import("dod_config.zig");
@@ -28,6 +30,13 @@ pub const HttpMethod = dod_config.HttpMethod;
 pub const HttpStatus = dod_config.HttpStatus;
 pub const ProtocolType = dod_config.ProtocolType;
 pub const DOD_CONSTANTS = dod_config.DOD_CONSTANTS;
+
+// Re-export nen-core types for unified ecosystem
+pub const NenError = nen_core.NenError;
+pub const MessageType = nen_core.MessageType;
+pub const BatchResult = nen_core.BatchResult;
+pub const ClientBatcher = nen_core.ClientBatcher;
+pub const DODConstants = nen_core.DODConstants;
 
 // Re-export main types for convenience
 pub const HttpServer = http.HttpServer;
@@ -77,11 +86,7 @@ pub inline fn get_global_processor() *SIMDNetworkProcessor {
     return simd_network.get_global_processor();
 }
 
-pub inline fn process_mixed_batches(
-    connection_count: u32,
-    request_count: u32,
-    response_count: u32
-) void {
+pub inline fn process_mixed_batches(connection_count: u32, request_count: u32, response_count: u32) void {
     const layout = get_global_layout();
     simd_network.process_mixed_network_batches(layout, connection_count, request_count, response_count);
 }
