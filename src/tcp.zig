@@ -190,7 +190,7 @@ pub const TcpServer = struct {
                 return err;
             };
 
-            const client_socket = result.socket;
+            var client_socket = result.socket;
             const client_addr = result.address;
 
             // Acquire connection slot
