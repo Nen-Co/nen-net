@@ -18,6 +18,7 @@ pub const websocket = @import("websocket.zig");
 pub const connection = @import("connection.zig");
 pub const routing = @import("routing.zig");
 pub const performance = @import("performance.zig");
+pub const tls = @import("tls.zig");
 
 // Re-export DOD types
 pub const DODNetworkLayout = dod_layout.DODNetworkLayout;
@@ -55,6 +56,8 @@ pub const WebSocketServer = websocket.WebSocketServer;
 pub const Connection = connection.Connection;
 pub const Router = routing.Router;
 pub const PerformanceMonitor = performance.PerformanceMonitor;
+pub const TlsConfig = tls.TlsConfig;
+pub const TlsContext = tls.TlsContext;
 
 // Configuration constants
 pub const default_port = config.default_port;
