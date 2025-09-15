@@ -15,7 +15,24 @@ jobs:
     
     steps:
     - name: Checkout code
+
+    - name: Checkout nen-core
       uses: actions/checkout@v4
+      with:
+        repository: Nen-Co/nen-core
+        path: nen-core
+
+    - name: Checkout nen-io
+      uses: actions/checkout@v4
+      with:
+        repository: Nen-Co/nen-io
+        path: nen-io
+
+    - name: Checkout nen-json
+      uses: actions/checkout@v4
+      with:
+        repository: Nen-Co/nen-json
+        path: nen-json      uses: actions/checkout@v4
 
     - name: Setup Zig
       uses: goto-bus-stop/setup-zig@v2
@@ -57,7 +74,24 @@ jobs:
     
     steps:
     - name: Checkout code
+
+    - name: Checkout nen-core
       uses: actions/checkout@v4
+      with:
+        repository: Nen-Co/nen-core
+        path: nen-core
+
+    - name: Checkout nen-io
+      uses: actions/checkout@v4
+      with:
+        repository: Nen-Co/nen-io
+        path: nen-io
+
+    - name: Checkout nen-json
+      uses: actions/checkout@v4
+      with:
+        repository: Nen-Co/nen-json
+        path: nen-json      uses: actions/checkout@v4
 
     - name: Setup Zig
       uses: goto-bus-stop/setup-zig@v2
