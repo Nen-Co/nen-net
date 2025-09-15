@@ -30,5 +30,3 @@ pub const TlsContext = struct {
         return error.TLSNotSupported;
     }
 };
-
-

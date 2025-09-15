@@ -11,6 +11,20 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Add nen-io dependency
+    const nen_io = b.addModule("nen-io", .{
+        .root_source_file = b.path("../nen-io/src/lib.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Add nen-json dependency
+    const nen_json = b.addModule("nen-json", .{
+        .root_source_file = b.path("../nen-json/src/lib.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Main library module
     const lib = b.addModule("nen-net", .{
         .root_source_file = b.path("src/lib.zig"),
@@ -18,6 +32,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     lib.addImport("nen-core", nen_core);
+    lib.addImport("nen-io", nen_io);
+    lib.addImport("nen-json", nen_json);
 
     // Main executable for testing/demo
     const exe = b.addExecutable(.{
@@ -30,6 +46,8 @@ pub fn build(b: *std.Build) void {
     });
     exe.root_module.addImport("nen-net", lib);
     exe.root_module.addImport("nen-core", nen_core);
+    exe.root_module.addImport("nen-io", nen_io);
+    exe.root_module.addImport("nen-json", nen_json);
 
     b.installArtifact(exe);
 
@@ -43,6 +61,8 @@ pub fn build(b: *std.Build) void {
     });
     unit_tests.root_module.addImport("nen-net", lib);
     unit_tests.root_module.addImport("nen-core", nen_core);
+    unit_tests.root_module.addImport("nen-io", nen_io);
+    unit_tests.root_module.addImport("nen-json", nen_json);
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
     const test_step = b.step("test", "Run unit tests");
@@ -58,6 +78,8 @@ pub fn build(b: *std.Build) void {
     });
     http_tests.root_module.addImport("nen-net", lib);
     http_tests.root_module.addImport("nen-core", nen_core);
+    http_tests.root_module.addImport("nen-io", nen_io);
+    http_tests.root_module.addImport("nen-json", nen_json);
 
     const run_http_tests = b.addRunArtifact(http_tests);
     test_step.dependOn(&run_http_tests.step);
@@ -72,6 +94,8 @@ pub fn build(b: *std.Build) void {
     });
     tcp_tests.root_module.addImport("nen-net", lib);
     tcp_tests.root_module.addImport("nen-core", nen_core);
+    tcp_tests.root_module.addImport("nen-io", nen_io);
+    tcp_tests.root_module.addImport("nen-json", nen_json);
 
     const run_tcp_tests = b.addRunArtifact(tcp_tests);
     test_step.dependOn(&run_tcp_tests.step);
@@ -86,6 +110,8 @@ pub fn build(b: *std.Build) void {
     });
     websocket_tests.root_module.addImport("nen-net", lib);
     websocket_tests.root_module.addImport("nen-core", nen_core);
+    websocket_tests.root_module.addImport("nen-io", nen_io);
+    websocket_tests.root_module.addImport("nen-json", nen_json);
 
     const run_websocket_tests = b.addRunArtifact(websocket_tests);
     test_step.dependOn(&run_websocket_tests.step);
@@ -100,6 +126,8 @@ pub fn build(b: *std.Build) void {
     });
     connection_tests.root_module.addImport("nen-net", lib);
     connection_tests.root_module.addImport("nen-core", nen_core);
+    connection_tests.root_module.addImport("nen-io", nen_io);
+    connection_tests.root_module.addImport("nen-json", nen_json);
 
     const run_connection_tests = b.addRunArtifact(connection_tests);
     test_step.dependOn(&run_connection_tests.step);
@@ -114,6 +142,8 @@ pub fn build(b: *std.Build) void {
     });
     routing_tests.root_module.addImport("nen-net", lib);
     routing_tests.root_module.addImport("nen-core", nen_core);
+    routing_tests.root_module.addImport("nen-io", nen_io);
+    routing_tests.root_module.addImport("nen-json", nen_json);
 
     const run_routing_tests = b.addRunArtifact(routing_tests);
     test_step.dependOn(&run_routing_tests.step);
@@ -128,6 +158,8 @@ pub fn build(b: *std.Build) void {
     });
     performance_tests.root_module.addImport("nen-net", lib);
     performance_tests.root_module.addImport("nen-core", nen_core);
+    performance_tests.root_module.addImport("nen-io", nen_io);
+    performance_tests.root_module.addImport("nen-json", nen_json);
 
     const run_performance_tests = b.addRunArtifact(performance_tests);
     test_step.dependOn(&run_performance_tests.step);
@@ -143,6 +175,8 @@ pub fn build(b: *std.Build) void {
     });
     benchmark.root_module.addImport("nen-net", lib);
     benchmark.root_module.addImport("nen-core", nen_core);
+    benchmark.root_module.addImport("nen-io", nen_io);
+    benchmark.root_module.addImport("nen-json", nen_json);
 
     const run_benchmark = b.addRunArtifact(benchmark);
     const benchmark_step = b.step("benchmark", "Run standard library comparison benchmark");
@@ -179,6 +213,8 @@ pub fn build(b: *std.Build) void {
     });
     examples.root_module.addImport("nen-net", lib);
     examples.root_module.addImport("nen-core", nen_core);
+    examples.root_module.addImport("nen-io", nen_io);
+    examples.root_module.addImport("nen-json", nen_json);
 
     const run_examples = b.addRunArtifact(examples);
     const examples_step = b.step("examples", "Run HTTP server example");
