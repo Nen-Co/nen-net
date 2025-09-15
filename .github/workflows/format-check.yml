@@ -8,27 +8,20 @@ on:
 
 jobs:
   format-check:
-    name: check
+    name: Format Check
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Zig 0.15.1
-        uses: goto-bus-stop/setup-zig@v2
-        with:
-          version: 0.15.1
+    - name: Setup Zig
+      uses: goto-bus-stop/setup-zig@v2
+      with:
+        zig-version: 0.15.1
 
-      - name: Verify Zig installation
-        run: |
-          set -euo pipefail
-          zig version
-          which zig
-
-      - name: Check Zig formatting
-        run: |
-          set -euo pipefail
-          zig fmt --check .
+    - name: Check formatting
+      run: |
+        echo "🎨 Checking code formatting"
+        zig fmt --check .
+        echo "✅ Code formatting is correct"
