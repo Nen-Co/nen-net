@@ -4,7 +4,6 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-
     // External dependencies
     const nen_core = b.addModule("nen-core", .{
         .root_source_file = b.path("nen-core/src/lib.zig"),
@@ -22,7 +21,7 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("nen-json/src/lib.zig"),
         .target = target,
         .optimize = optimize,
-    });    // Main library module
+    }); // Main library module
     const lib = b.addModule("nen-net", .{
         .root_source_file = b.path("src/lib.zig"),
         .target = target,
