@@ -175,6 +175,42 @@ pub fn build(b: *std.Build) void {
     const benchmark_step = b.step("benchmark", "Run standard library comparison benchmark");
     benchmark_step.dependOn(&run_benchmark.step);
 
+    // Real-world performance benchmark
+    const real_benchmark = b.addExecutable(.{
+        .name = "real_world_benchmark",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/real_world_benchmark.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    real_benchmark.root_module.addImport("nen-net", lib);
+    real_benchmark.root_module.addImport("nen-core", nen_core);
+    real_benchmark.root_module.addImport("nen-io", nen_io);
+    real_benchmark.root_module.addImport("nen-json", nen_json);
+
+    const run_real_benchmark = b.addRunArtifact(real_benchmark);
+    const real_benchmark_step = b.step("benchmark-real", "Run real-world performance benchmark");
+    real_benchmark_step.dependOn(&run_real_benchmark.step);
+
+    // Simple performance test
+    const simple_benchmark = b.addExecutable(.{
+        .name = "simple_performance_test",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/simple_performance_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    simple_benchmark.root_module.addImport("nen-net", lib);
+    simple_benchmark.root_module.addImport("nen-core", nen_core);
+    simple_benchmark.root_module.addImport("nen-io", nen_io);
+    simple_benchmark.root_module.addImport("nen-json", nen_json);
+
+    const run_simple_benchmark = b.addRunArtifact(simple_benchmark);
+    const simple_benchmark_step = b.step("benchmark-simple", "Run simple performance test");
+    simple_benchmark_step.dependOn(&run_simple_benchmark.step);
+
     // Integration tests (placeholder - will be implemented later)
     const integration_step = b.step("test-integration", "Run integration tests");
     // For now, just run the unit tests as integration tests are not yet implemented
