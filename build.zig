@@ -4,21 +4,21 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // External dependencies
+    // External dependencies - point to parent directory
     const nen_core = b.addModule("nen-core", .{
-        .root_source_file = b.path("nen-core/src/lib.zig"),
+        .root_source_file = b.path("../nen-core/src/lib.zig"),
         .target = target,
         .optimize = optimize,
     });
 
     const nen_io = b.addModule("nen-io", .{
-        .root_source_file = b.path("nen-io/src/lib.zig"),
+        .root_source_file = b.path("../nen-io/src/lib.zig"),
         .target = target,
         .optimize = optimize,
     });
 
     const nen_json = b.addModule("nen-json", .{
-        .root_source_file = b.path("nen-json/src/lib.zig"),
+        .root_source_file = b.path("../nen-json/src/lib.zig"),
         .target = target,
         .optimize = optimize,
     }); // Main library module

@@ -173,7 +173,7 @@ pub const TcpServer = struct {
         for (0..@intCast(event_count)) |i| {
             if (builtin.os.tag == .linux) {
                 const event = &self.events[i];
-                if (event.data.fd == self.listen_socket) {
+                if (event.data.fd == self.listen_socket.getFd()) {
                     try self.acceptConnections();
                 } else {
                     try self.handleClientEvent(@intCast(event.data.fd));
@@ -250,7 +250,7 @@ pub const TcpServer = struct {
     }
 
     inline fn closeConnection(self: *@This(), slot: u16) void {
-        const socket = &self.connection_pool.sockets[slot];
+        var socket = &self.connection_pool.sockets[slot];
         socket.close();
         self.connection_pool.release(slot);
     }
