@@ -5,6 +5,7 @@ const std = @import("std");
 const config = @import("config.zig");
 const tcp = @import("tcp.zig");
 const nen_json = @import("nen-json");
+const routing = @import("routing.zig");
 
 // HTTP methods
 pub const Method = enum {
@@ -38,6 +39,18 @@ pub const Header = struct {
     value: []const u8,
 };
 
+// Path parameter for route matching
+pub const PathParam = struct {
+    name: []const u8,
+    value: []const u8,
+};
+
+// Query parameter
+pub const QueryParam = struct {
+    name: []const u8,
+    value: []const u8,
+};
+
 // HTTP request with static allocation
 pub const HttpRequest = struct {
     method: Method,
@@ -46,6 +59,18 @@ pub const HttpRequest = struct {
     header_count: u8 = 0,
     body: []const u8 = "",
     version: []const u8 = "HTTP/1.1",
+
+    // Path parameters from route matching
+    path_params: [8]PathParam = [_]PathParam{.{ .name = "", .value = "" }} ** 8,
+    path_param_count: u8 = 0,
+
+    // Query parameters
+    query_params: [32]QueryParam = [_]QueryParam{.{ .name = "", .value = "" }} ** 32,
+    query_param_count: u8 = 0,
+    query_parsed: bool = false,
+
+    // Raw query string
+    query_string: []const u8 = "",
 
     pub inline fn addHeader(self: *@This(), name: []const u8, value: []const u8) !void {
         if (self.header_count >= 32) return error.TooManyHeaders;
@@ -61,6 +86,105 @@ pub const HttpRequest = struct {
         }
         return null;
     }
+
+    pub inline fn setPathParams(self: *@This(), params: []const []const u8) void {
+        self.path_param_count = @intCast(@min(params.len, 8));
+        for (0..self.path_param_count) |i| {
+            self.path_params[i].name = params[i];
+        }
+    }
+
+    pub inline fn param(self: *const @This(), name: []const u8) ?[]const u8 {
+        for (0..self.path_param_count) |i| {
+            if (std.mem.eql(u8, self.path_params[i].name, name)) {
+                return self.path_params[i].value;
+            }
+        }
+        return null;
+    }
+
+    pub inline fn parseQuery(self: *@This()) !void {
+        if (self.query_parsed) return;
+
+        var query_str = self.query_string;
+        var param_count: u8 = 0;
+
+        while (query_str.len > 0 and param_count < 32) {
+            const eq_pos = std.mem.indexOfScalar(u8, query_str, '=');
+            if (eq_pos == null) break;
+
+            const name = query_str[0..eq_pos.?];
+            query_str = query_str[eq_pos.? + 1 ..];
+
+            const amp_pos = std.mem.indexOfScalar(u8, query_str, '&');
+            const value = if (amp_pos) |pos| query_str[0..pos] else query_str;
+
+            self.query_params[param_count] = QueryParam{
+                .name = name,
+                .value = value,
+            };
+            param_count += 1;
+
+            if (amp_pos) |pos| {
+                query_str = query_str[pos + 1 ..];
+            } else {
+                break;
+            }
+        }
+
+        self.query_param_count = param_count;
+        self.query_parsed = true;
+    }
+
+    pub inline fn query(self: *@This()) ![]const QueryParam {
+        try self.parseQuery();
+        return self.query_params[0..self.query_param_count];
+    }
+
+    pub inline fn getQueryParam(self: *@This(), name: []const u8) !?[]const u8 {
+        try self.parseQuery();
+        for (0..self.query_param_count) |i| {
+            if (std.mem.eql(u8, self.query_params[i].name, name)) {
+                return self.query_params[i].value;
+            }
+        }
+        return null;
+    }
+};
+
+// Content type enum
+pub const ContentType = enum {
+    TEXT,
+    HTML,
+    JSON,
+    XML,
+    CSS,
+    JS,
+    PNG,
+    JPG,
+    GIF,
+    SVG,
+    PDF,
+    BINARY,
+    UNKNOWN,
+
+    pub inline fn toString(self: @This()) []const u8 {
+        return switch (self) {
+            .TEXT => "text/plain",
+            .HTML => "text/html",
+            .JSON => "application/json",
+            .XML => "application/xml",
+            .CSS => "text/css",
+            .JS => "application/javascript",
+            .PNG => "image/png",
+            .JPG => "image/jpeg",
+            .GIF => "image/gif",
+            .SVG => "image/svg+xml",
+            .PDF => "application/pdf",
+            .BINARY => "application/octet-stream",
+            .UNKNOWN => "application/octet-stream",
+        };
+    }
 };
 
 // HTTP response with static allocation
@@ -70,6 +194,8 @@ pub const HttpResponse = struct {
     header_count: u8 = 0,
     body: []const u8 = "",
     version: []const u8 = "HTTP/1.1",
+    content_type: ContentType = .TEXT,
+    written: bool = false,
 
     pub inline fn addHeader(self: *@This(), name: []const u8, value: []const u8) !void {
         if (self.header_count >= 32) return error.TooManyHeaders;
@@ -81,12 +207,25 @@ pub const HttpResponse = struct {
         self.body = body;
     }
 
+    pub inline fn setStatus(self: *@This(), status: StatusCode) void {
+        self.status_code = status;
+    }
+
+    pub inline fn setContentType(self: *@This(), content_type: ContentType) void {
+        self.content_type = content_type;
+        self.addHeader("Content-Type", content_type.toString()) catch {};
+    }
+
     // JSON response helpers
-    pub inline fn setJsonBody(self: *@This(), json_value: nen_json.JsonValue) !void {
-        const json_string = try nen_json.json.stringify(json_value);
+    pub inline fn json(self: *@This(), value: anytype) !void {
+        self.setContentType(.JSON);
+        const json_string = try nen_json.json.stringify(value);
         self.body = json_string;
-        try self.addHeader("Content-Type", "application/json");
         try self.addHeader("Content-Length", try std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{json_string.len}));
+    }
+
+    pub inline fn setJsonBody(self: *@This(), json_value: nen_json.JsonValue) !void {
+        try self.json(json_value);
     }
 
     pub inline fn setJsonObject(self: *@This(), obj: nen_json.JsonObject) !void {
@@ -113,6 +252,56 @@ pub const HttpResponse = struct {
         const json_value = nen_json.json.boolean(bool_val);
         try self.setJsonBody(json_value);
     }
+
+    // Text response helpers
+    pub inline fn text(self: *@This(), text_content: []const u8) void {
+        self.setContentType(.TEXT);
+        self.body = text_content;
+        self.addHeader("Content-Length", std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{text_content.len}) catch "0") catch {};
+    }
+
+    pub inline fn html(self: *@This(), html_content: []const u8) void {
+        self.setContentType(.HTML);
+        self.body = html_content;
+        self.addHeader("Content-Length", std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{html_content.len}) catch "0") catch {};
+    }
+
+    // Writer for streaming responses
+    pub inline fn writer(self: *@This()) ResponseWriter {
+        return ResponseWriter{ .response = self };
+    }
+
+    // Write response (mark as written)
+    pub inline fn write(self: *@This()) void {
+        self.written = true;
+    }
+};
+
+// Response writer for streaming
+pub const ResponseWriter = struct {
+    response: *HttpResponse,
+    buffer: [4096]u8 = undefined,
+    pos: usize = 0,
+
+    pub inline fn print(self: *@This(), comptime fmt: []const u8, args: anytype) !void {
+        const result = try std.fmt.bufPrint(self.buffer[self.pos..], fmt, args);
+        self.pos += result.len;
+        if (self.pos >= self.buffer.len) {
+            self.pos = self.buffer.len - 1;
+        }
+    }
+
+    pub inline fn writeAll(self: *@This(), data: []const u8) !void {
+        const remaining = self.buffer.len - self.pos;
+        const to_write = @min(data.len, remaining);
+        @memcpy(self.buffer[self.pos .. self.pos + to_write], data[0..to_write]);
+        self.pos += to_write;
+    }
+
+    pub inline fn flush(self: *@This()) void {
+        self.response.body = self.buffer[0..self.pos];
+        self.response.written = true;
+    }
 };
 
 // Route handler function type
@@ -125,13 +314,12 @@ pub const Route = struct {
     handler: RouteHandler,
 };
 
-// HTTP server with static allocation
+// HTTP server with static allocation and advanced routing
 pub const HttpServer = struct {
     config: config.ServerConfig,
-    routes: [64]Route = [_]Route{.{ .method = .GET, .path = "", .handler = undefined }} ** 64,
-    route_count: u8 = 0,
     tcp_server: tcp.TcpServer,
     is_running: bool = false,
+    router: ?*routing.Router = null,
 
     pub inline fn init(config_options: config.ServerConfig) !@This() {
         const tcp_config = config.ServerConfig{
@@ -147,19 +335,8 @@ pub const HttpServer = struct {
         };
     }
 
-    pub inline fn addRoute(self: *@This(), method: Method, path: []const u8, handler: RouteHandler) !void {
-        if (self.route_count >= 64) return error.TooManyRoutes;
-        self.routes[self.route_count] = Route{ .method = method, .path = path, .handler = handler };
-        self.route_count += 1;
-    }
-
-    pub inline fn findRoute(self: *const @This(), method: Method, path: []const u8) ?RouteHandler {
-        for (0..self.route_count) |i| {
-            if (self.routes[i].method == method and std.mem.eql(u8, self.routes[i].path, path)) {
-                return self.routes[i].handler;
-            }
-        }
-        return null;
+    pub inline fn setRouter(self: *@This(), router: *routing.Router) void {
+        self.router = router;
     }
 
     pub inline fn start(self: *@This()) !void {
@@ -174,6 +351,36 @@ pub const HttpServer = struct {
 
     pub inline fn isRunning(self: *const @This()) bool {
         return self.is_running;
+    }
+
+    // Process HTTP request with routing
+    pub inline fn handleRequest(self: *@This(), req: *HttpRequest, res: *HttpResponse) void {
+        if (self.router) |router| {
+            const http_method = routing.HttpMethod.fromString(@tagName(req.method)) orelse .OTHER;
+            var params: [8]routing.PathParam = undefined;
+
+            if (router.findRoute(http_method, req.path, &params)) |route_match| {
+                // Set path parameters in request
+                for (0..route_match[1]) |i| {
+                    req.path_params[i] = PathParam{
+                        .name = params[i].name,
+                        .value = params[i].value,
+                    };
+                }
+                req.path_param_count = @intCast(route_match[1]);
+
+                // Execute the route
+                router.executeRoute(route_match[0], req, res, route_match[1]);
+            } else {
+                // No route found - 404
+                res.setStatus(.NOT_FOUND);
+                res.text("Not Found");
+            }
+        } else {
+            // No router - 500
+            res.setStatus(.INTERNAL_SERVER_ERROR);
+            res.text("No router configured");
+        }
     }
 };
 

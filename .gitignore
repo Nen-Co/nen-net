@@ -44,3 +44,4 @@ test_client.pid
 benchmark_results/
 performance_logs/
 memory_dumps/
+third_party_reference/

@@ -77,6 +77,18 @@ pub const StatusCode = http.StatusCode;
 pub const Header = http.Header;
 pub const RouteHandler = http.RouteHandler;
 pub const Route = http.Route;
+pub const ContentType = http.ContentType;
+pub const PathParam = http.PathParam;
+pub const QueryParam = http.QueryParam;
+pub const ResponseWriter = http.ResponseWriter;
+
+// Re-export router types
+pub const Router = routing.Router;
+pub const HttpMethod = routing.HttpMethod;
+pub const RouteConfig = routing.RouteConfig;
+pub const Middleware = routing.Middleware;
+pub const MiddlewareExecutor = routing.MiddlewareExecutor;
+pub const RouteGroup = routing.RouteGroup;
 
 pub const TcpClient = tcp.TcpClient;
 pub const TcpServer = tcp.TcpServer;
