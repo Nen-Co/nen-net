@@ -27,6 +27,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    lib.addImport("nen-core", nen_core);
+    lib.addImport("nen-io", nen_io);
+    lib.addImport("nen-json", nen_json);
 
     // Main executable for testing/demo
     const exe = b.addExecutable(.{
@@ -210,6 +213,176 @@ pub fn build(b: *std.Build) void {
     const run_simple_benchmark = b.addRunArtifact(simple_benchmark);
     const simple_benchmark_step = b.step("benchmark-simple", "Run simple performance test");
     simple_benchmark_step.dependOn(&run_simple_benchmark.step);
+
+    // Fair comparison benchmark
+    const fair_benchmark = b.addExecutable(.{
+        .name = "fair_comparison",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/fair_comparison.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    fair_benchmark.root_module.addImport("nen-net", lib);
+    fair_benchmark.root_module.addImport("nen-core", nen_core);
+    fair_benchmark.root_module.addImport("nen-io", nen_io);
+    fair_benchmark.root_module.addImport("nen-json", nen_json);
+
+    const run_fair_benchmark = b.addRunArtifact(fair_benchmark);
+    const fair_benchmark_step = b.step("benchmark-fair", "Run fair performance comparison");
+    fair_benchmark_step.dependOn(&run_fair_benchmark.step);
+
+    // http.zig comparison benchmark
+    const http_zig_benchmark = b.addExecutable(.{
+        .name = "http_zig_comparison",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("third_party_reference/http_zig_comparison.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    http_zig_benchmark.root_module.addImport("nen-net", lib);
+    http_zig_benchmark.root_module.addImport("nen-core", nen_core);
+    http_zig_benchmark.root_module.addImport("nen-io", nen_io);
+    http_zig_benchmark.root_module.addImport("nen-json", nen_json);
+
+    const run_http_zig_benchmark = b.addRunArtifact(http_zig_benchmark);
+    const http_zig_benchmark_step = b.step("benchmark-http-zig", "Run nen-net vs http.zig comparison");
+    http_zig_benchmark_step.dependOn(&run_http_zig_benchmark.step);
+
+    // Simple http.zig comparison benchmark
+    const http_zig_simple_benchmark = b.addExecutable(.{
+        .name = "http_zig_simple",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/http_zig_simple.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    http_zig_simple_benchmark.root_module.addImport("nen-net", lib);
+    http_zig_simple_benchmark.root_module.addImport("nen-core", nen_core);
+    http_zig_simple_benchmark.root_module.addImport("nen-io", nen_io);
+    http_zig_simple_benchmark.root_module.addImport("nen-json", nen_json);
+
+    const run_http_zig_simple_benchmark = b.addRunArtifact(http_zig_simple_benchmark);
+    const http_zig_simple_benchmark_step = b.step("benchmark-http-zig-simple", "Run simple nen-net vs http.zig comparison");
+    http_zig_simple_benchmark_step.dependOn(&run_http_zig_simple_benchmark.step);
+
+    // Real comparison benchmark
+    const real_comparison_benchmark = b.addExecutable(.{
+        .name = "real_comparison",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/real_comparison.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    real_comparison_benchmark.root_module.addImport("nen-net", lib);
+    real_comparison_benchmark.root_module.addImport("nen-core", nen_core);
+    real_comparison_benchmark.root_module.addImport("nen-io", nen_io);
+    real_comparison_benchmark.root_module.addImport("nen-json", nen_json);
+
+    const run_real_comparison_benchmark = b.addRunArtifact(real_comparison_benchmark);
+    const real_comparison_benchmark_step = b.step("benchmark-real-comparison", "Run real nen-net vs std comparison");
+    real_comparison_benchmark_step.dependOn(&run_real_comparison_benchmark.step);
+
+    // Fair HTTP comparison benchmark
+    const fair_http_benchmark = b.addExecutable(.{
+        .name = "fair_http_comparison",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/fair_http_comparison.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    fair_http_benchmark.root_module.addImport("nen-net", lib);
+    fair_http_benchmark.root_module.addImport("nen-core", nen_core);
+    fair_http_benchmark.root_module.addImport("nen-io", nen_io);
+    fair_http_benchmark.root_module.addImport("nen-json", nen_json);
+
+    const run_fair_http_benchmark = b.addRunArtifact(fair_http_benchmark);
+    const fair_http_benchmark_step = b.step("benchmark-fair-http", "Run fair nen-net vs std HTTP comparison");
+    fair_http_benchmark_step.dependOn(&run_fair_http_benchmark.step);
+
+    // Simple fair comparison benchmark
+    const simple_fair_benchmark = b.addExecutable(.{
+        .name = "simple_fair_comparison",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/simple_fair_comparison.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    simple_fair_benchmark.root_module.addImport("nen-net", lib);
+    simple_fair_benchmark.root_module.addImport("nen-core", nen_core);
+    simple_fair_benchmark.root_module.addImport("nen-io", nen_io);
+    simple_fair_benchmark.root_module.addImport("nen-json", nen_json);
+
+    const run_simple_fair_benchmark = b.addRunArtifact(simple_fair_benchmark);
+    const simple_fair_benchmark_step = b.step("benchmark-simple-fair", "Run simple fair nen-net vs std comparison");
+    simple_fair_benchmark_step.dependOn(&run_simple_fair_benchmark.step);
+
+    // Realistic comparison benchmark
+    const realistic_benchmark = b.addExecutable(.{
+        .name = "realistic_comparison",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/realistic_comparison.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    realistic_benchmark.root_module.addImport("nen-net", lib);
+    realistic_benchmark.root_module.addImport("nen-core", nen_core);
+    realistic_benchmark.root_module.addImport("nen-io", nen_io);
+    realistic_benchmark.root_module.addImport("nen-json", nen_json);
+
+    const run_realistic_benchmark = b.addRunArtifact(realistic_benchmark);
+    const realistic_benchmark_step = b.step("benchmark-realistic", "Run realistic nen-net vs std comparison");
+    realistic_benchmark_step.dependOn(&run_realistic_benchmark.step);
+
+    // Real http.zig comparison benchmark
+    const real_http_zig_benchmark = b.addExecutable(.{
+        .name = "real_http_zig_comparison",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/real_http_zig_comparison.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    real_http_zig_benchmark.root_module.addImport("nen-net", lib);
+    real_http_zig_benchmark.root_module.addImport("nen-core", nen_core);
+    real_http_zig_benchmark.root_module.addImport("nen-io", nen_io);
+    real_http_zig_benchmark.root_module.addImport("nen-json", nen_json);
+    real_http_zig_benchmark.root_module.addImport("httpz", b.dependency("httpz", .{ .target = target, .optimize = optimize }).module("httpz"));
+
+    const run_real_http_zig_benchmark = b.addRunArtifact(real_http_zig_benchmark);
+    const real_http_zig_benchmark_step = b.step("benchmark-real-http-zig", "Run real nen-net vs http.zig comparison");
+    real_http_zig_benchmark_step.dependOn(&run_real_http_zig_benchmark.step);
+
+    // Real server executables for end-to-end testing
+    const server_nen_net = b.addExecutable(.{
+        .name = "server_nen_net",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/server_nen_net.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    const server_http_zig = b.addExecutable(.{
+        .name = "server_http_zig",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/server_http_zig.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    server_http_zig.root_module.addImport("httpz", b.dependency("httpz", .{ .target = target, .optimize = optimize }).module("httpz"));
+
+    // Real benchmark step
+    const real_benchmark_servers_step = b.step("benchmark-real-servers", "Run real end-to-end server benchmark");
+    real_benchmark_servers_step.dependOn(&server_nen_net.step);
+    real_benchmark_servers_step.dependOn(&server_http_zig.step);
 
     // Integration tests (placeholder - will be implemented later)
     const integration_step = b.step("test-integration", "Run integration tests");

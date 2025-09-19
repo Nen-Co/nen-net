@@ -8,7 +8,7 @@ const nen_io = @import("nen-io");
 const builtin = @import("builtin");
 
 // Use nen-io for network operations
-const NetworkSocket = nen_io.NetworkSocket;
+const NetworkSocket = nen_io.network.NetworkSocket;
 const parseAddress = nen_io.network.parseAddress;
 
 // DOD Connection Pool - Struct of Arrays layout for cache efficiency
@@ -190,7 +190,7 @@ pub const TcpServer = struct {
                 return err;
             };
 
-            const client_socket = result.socket;
+            var client_socket = result.socket;
             const client_addr = result.address;
 
             // Acquire connection slot

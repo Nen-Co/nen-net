@@ -56,8 +56,8 @@ pub const PathParam = struct {
 // Route handler function type
 pub const RouteHandler = *const fn (*http.HttpRequest, *http.HttpResponse) void;
 
-// Middleware function type
-pub const Middleware = *const fn (*http.HttpRequest, *http.HttpResponse, *MiddlewareExecutor) void;
+// Middleware function type - using opaque pointer to avoid circular dependency
+pub const Middleware = *const fn (*http.HttpRequest, *http.HttpResponse, *anyopaque) void;
 
 // Middleware executor for chaining
 pub const MiddlewareExecutor = struct {

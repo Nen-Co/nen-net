@@ -6,6 +6,7 @@ const config = @import("config.zig");
 const tcp = @import("tcp.zig");
 const nen_json = @import("nen-json");
 const routing = @import("routing.zig");
+const signals = @import("signals.zig");
 
 // HTTP methods
 pub const Method = enum {
@@ -320,6 +321,7 @@ pub const HttpServer = struct {
     tcp_server: tcp.TcpServer,
     is_running: bool = false,
     router: ?*routing.Router = null,
+    graceful_shutdown: bool = false,
 
     pub inline fn init(config_options: config.ServerConfig) !@This() {
         const tcp_config = config.ServerConfig{
@@ -329,9 +331,11 @@ pub const HttpServer = struct {
             .response_buffer_size = config_options.response_buffer_size,
         };
 
+        var router = routing.Router.init();
         return @This(){
             .config = config_options,
             .tcp_server = try tcp.TcpServer.init(tcp_config),
+            .router = &router,
         };
     }
 
@@ -339,14 +343,42 @@ pub const HttpServer = struct {
         self.router = router;
     }
 
+    pub inline fn addRoute(self: *@This(), method: routing.HttpMethod, path: []const u8, handler: routing.RouteHandler) !void {
+        if (self.router) |router| {
+            try router.addRoute(method, path, handler);
+        } else {
+            return error.NoRouterSet;
+        }
+    }
+
+    /// Enable graceful shutdown
+    pub inline fn enableGracefulShutdown(self: *@This()) void {
+        self.graceful_shutdown = true;
+    }
+
+    /// Check if graceful shutdown is requested
+    pub inline fn isShutdownRequested(self: *@This()) bool {
+        return self.graceful_shutdown and signals.isShutdownRequested();
+    }
+
+    /// Stop the server gracefully
+    pub inline fn stop(self: *@This()) void {
+        self.is_running = false;
+        self.graceful_shutdown = true;
+    }
+
+    /// Wait for graceful shutdown with timeout
+    pub fn waitForShutdown(self: *@This(), timeout_ms: u32) bool {
+        if (!self.graceful_shutdown) {
+            return false;
+        }
+
+        return signals.waitForShutdown(timeout_ms);
+    }
+
     pub inline fn start(self: *@This()) !void {
         self.is_running = true;
         try self.tcp_server.start();
-    }
-
-    pub inline fn stop(self: *@This()) void {
-        self.is_running = false;
-        self.tcp_server.stop();
     }
 
     pub inline fn isRunning(self: *const @This()) bool {

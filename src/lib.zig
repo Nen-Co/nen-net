@@ -28,6 +28,7 @@ pub const connection = @import("connection.zig");
 pub const routing = @import("routing.zig");
 pub const performance = @import("performance.zig");
 pub const tls = @import("tls.zig");
+pub const signals = @import("signals.zig");
 
 // Re-export DOD types
 pub const DODNetworkLayout = dod_layout.DODNetworkLayout;
@@ -47,6 +48,10 @@ pub const MessageType = nen_core.MessageType;
 pub const BatchResult = nen_core.BatchResult;
 pub const ClientBatcher = nen_core.ClientBatcher;
 pub const DODConstants = nen_core.DODConstants;
+
+// Re-export signal handling
+pub const SignalConfig = signals.SignalConfig;
+pub const SignalHandler = signals.SignalHandler;
 
 // Re-export nen-io types for unified ecosystem
 pub const Terminal = nen_io.Terminal;
@@ -83,8 +88,6 @@ pub const QueryParam = http.QueryParam;
 pub const ResponseWriter = http.ResponseWriter;
 
 // Re-export router types
-pub const Router = routing.Router;
-pub const HttpMethod = routing.HttpMethod;
 pub const RouteConfig = routing.RouteConfig;
 pub const Middleware = routing.Middleware;
 pub const MiddlewareExecutor = routing.MiddlewareExecutor;
@@ -94,7 +97,6 @@ pub const TcpClient = tcp.TcpClient;
 pub const TcpServer = tcp.TcpServer;
 pub const WebSocketServer = websocket.WebSocketServer;
 pub const Connection = connection.Connection;
-pub const Router = routing.Router;
 pub const PerformanceMonitor = performance.PerformanceMonitor;
 pub const TlsConfig = tls.TlsConfig;
 pub const TlsContext = tls.TlsContext;
